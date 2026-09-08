@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 /**
  * Matrix Maze — sync built music from Kaiser into this app.
- * Source of truth: Menhir/Music/Kaiser/projects/<project-id>/export/out/
+ * Source of truth: Menhir/Audio/Kaiser/composition/projects/<project-id>/export/out/
  * Reads stem list from that project's project.json.
  */
 import fs from 'node:fs';
@@ -19,7 +19,7 @@ const projectId = projectIndex !== -1 && args[projectIndex + 1] ? args[projectIn
 const kaiserIndex = args.indexOf('--kaiser-root');
 const kaiserRoot = kaiserIndex !== -1 && args[kaiserIndex + 1]
   ? path.resolve(process.cwd(), args[kaiserIndex + 1])
-  : path.resolve(appDir, '../../../Music/Kaiser');
+  : path.resolve(appDir, '../../../Audio/Kaiser/composition');
 
 const configPath = path.join(kaiserRoot, 'projects', projectId, 'project.json');
 if (!fs.existsSync(configPath)) {

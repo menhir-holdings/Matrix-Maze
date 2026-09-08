@@ -4,7 +4,7 @@ OGG stems here are **copied from Kaiser**, not authored directly.
 
 ## Source of truth
 
-`Menhir/Music/Kaiser/projects/matrix-maze/export/out/ogg/` (and `mp3/`)
+`Menhir/Audio/Kaiser/composition/projects/matrix-maze/export/out/ogg/` (and `mp3/`)
 
 ## Update
 

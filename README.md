@@ -157,12 +157,12 @@ Hub ops (DNS / Vercel lattice): [stonehenge docs/DNS.md](https://github.com/menh
 
 ## Music (Kaiser)
 
-When this repo lives inside the **Menhir** monorepo, adaptive music is produced in `Music/Kaiser/projects/matrix-maze/` and copied into `app/public/audio/music/` by the client sync script.
+When this repo lives inside the **Menhir** monorepo, adaptive music is produced in `Audio/Kaiser/composition/projects/matrix-maze/` and copied into `app/public/audio/music/` by the client sync script.
 
-1. Build stems in Kaiser: `Music/Kaiser/export/convert-stems.bat matrix-maze` (or `.sh` on Unix) after placing WAVs in `Music/Kaiser/projects/matrix-maze/export/inbox/`.
+1. Build stems in Kaiser: `Audio/Kaiser/composition/export/convert-stems.bat matrix-maze` (or `.sh` on Unix) after placing WAVs in `Audio/Kaiser/composition/projects/matrix-maze/export/inbox/`.
 2. From `app/`: `npm run music:sync`
 
-Details: `app/public/audio/music/README.md` and `Music/Kaiser/projects/matrix-maze/README.md`.
+Details: `app/public/audio/music/README.md` and `Audio/Kaiser/composition/projects/matrix-maze/README.md`.
 
 ## How It Works
 
