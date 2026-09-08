@@ -1,8 +1,9 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-07-22  
-**SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)
+**As of:** 2026-09-08  
+**SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7) (Completed)  
+**Checkout:** `Menhir Holdings/Game/Matrix-Maze`
 
 ## Shipped
 
