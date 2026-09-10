@@ -1,25 +1,25 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-07-22  
-**SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)
+**As of:** 2026-09-10  
+**SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
+**Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
+**Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
 
 ## Shipped
 
 - 8 levels, best times (localStorage), level-complete UI, run summary
 - Tauri 2 desktop builds (Windows / macOS / Linux)
-- Unified web at [matrix-maze.menhir-holdings.com](https://matrix-maze.menhir-holdings.com/) — sidebar, Play button, embedded WASM game
+- Unified web at `/` — Play overlay, embedded WASM game at `/game/`
 - WASM port (`GameBackend`), mobile touch controls, pointer-lock + keyboard
 - Adaptive music L1–8, level-complete stinger, pause audio ([MT-99](https://linear.app/menhir-holdings/issue/MT-99))
 - Gold-path QA automation ([MT-65](https://linear.app/menhir-holdings/issue/MT-65))
 - Vercel deploy; GitHub releases proxy for desktop downloads
+- `/play` + `/dev` retired ([MT-102](https://linear.app/menhir-holdings/issue/MT-102))
 
-## Shipped (recent)
+## In review
 
-- [MT-102](https://linear.app/menhir-holdings/issue/MT-102) — Unified web at `/`; `/play` + `/dev` retired
-- [MT-45](https://linear.app/menhir-holdings/issue/MT-45) — Windows spacebar on level-complete
-- [MT-99](https://linear.app/menhir-holdings/issue/MT-99) — Adaptive music + SFX
-- [MT-65](https://linear.app/menhir-holdings/issue/MT-65) — Gold-path smoke + checklist
+- [MT-208](https://linear.app/menhir-holdings/issue/MT-208) — Web shell restyle (cabinet/title overlay). WASM game, levels, and `game/` untouched. Kappa host → `matmaz.vercel.app`.
 
 ## Backlog
 

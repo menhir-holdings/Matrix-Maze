@@ -2,6 +2,10 @@
 
 Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7). This file mirrors open work for repo readers.
 
+## In review
+
+- [MT-208](https://linear.app/menhir-holdings/issue/MT-208) — Web shell restyle (game untouched)
+
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
 Center win ASCII art the same way times and other messages are centered.

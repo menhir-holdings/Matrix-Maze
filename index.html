@@ -3,8 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matrix Maze - 3D ASCII Labyrinth Adventure</title>
+    <meta name="theme-color" content="#050505">
+    <meta name="description" content="Matrix Maze — a 3D ASCII labyrinth. Play in the browser or download for macOS and Windows.">
+    <title>Matrix Maze</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --ink: #f4f1ea;
+            --muted: #9c968b;
+            --line: rgba(244, 241, 234, 0.28);
+            --cabinet: rgba(8, 8, 10, 0.55);
+            --sheet: rgba(10, 10, 12, 0.88);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -17,10 +30,10 @@
         }
 
         body {
-            font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
-            background: #000;
-            color: #00ff00;
-            line-height: 1.4;
+            font-family: Figtree, ui-sans-serif, system-ui, sans-serif;
+            background: #050505;
+            color: var(--ink);
+            line-height: 1.45;
         }
 
         /* The game fills the whole viewport; the shell chrome floats on top. */
@@ -39,65 +52,313 @@
             position: fixed;
             inset: 0;
             z-index: 3;
-            background: radial-gradient(circle at 72% 50%, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.82));
-            transition: opacity 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px 32px;
+            background: radial-gradient(ellipse at 50% 42%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.7) 72%);
+            transition: background 0.25s ease;
+        }
+
+        #overlay.started {
+            background: rgba(0, 0, 0, 0.64);
         }
 
         #overlay.playing {
             display: none;
         }
 
-        /* Left sidebar: Updates / Download / How To Play. */
-        #sidebar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            width: min(380px, 88vw);
-            padding: 22px 20px;
-            overflow-y: auto;
-            background: rgba(0, 8, 0, 0.86);
-            border-right: 1px solid #00ff00;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.25);
+        .hud {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            text-align: center;
             gap: 18px;
+            max-width: 36rem;
         }
 
-        .brand-title {
-            font-size: 1.7em;
-            letter-spacing: 4px;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-        }
-
-        .brand-tag {
-            font-size: 0.8em;
-            color: #00cc00;
-            margin-top: 4px;
-        }
-
-        .panel {
-            border: 1px solid #00ff00;
-            background: rgba(0, 255, 0, 0.05);
-            padding: 12px;
-        }
-
-        .panel h2 {
-            font-size: 1em;
-            margin-bottom: 10px;
-            text-shadow: 0 0 5px #00ff00;
-            border-bottom: 1px solid #00ff00;
-            padding-bottom: 4px;
+        .pause-mark {
+            display: none;
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 1.35rem;
+            font-weight: 500;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            color: var(--ink);
+            padding-top: 10px;
+            border-top: 1px solid var(--line);
+        }
+
+        #overlay.started .pause-mark {
+            display: block;
+        }
+
+        #overlay.started .title,
+        #overlay.started .tag {
+            display: none;
+        }
+
+        .title {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: clamp(2.6rem, 9vw, 6.2rem);
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            line-height: 0.95;
+            text-transform: uppercase;
+            color: var(--ink);
+            text-shadow: 0 2px 28px rgba(0, 0, 0, 0.85);
+        }
+
+        .tag {
+            font-size: 0.92rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        #play-btn {
+            min-width: 168px;
+            padding: 11px 34px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--ink);
+            background: var(--cabinet);
+            border: 1.5px solid rgba(244, 241, 234, 0.82);
+            border-radius: 999px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        #play-btn:hover,
+        #play-btn:focus-visible {
+            background: var(--ink);
+            color: #111;
+            outline: none;
+        }
+
+        #play-hint {
+            font-size: 0.78rem;
+            color: var(--muted);
+        }
+
+        .hud-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px 18px;
+            margin-top: 6px;
+        }
+
+        .hud-links button,
+        .hud-links a {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .hud-links button:hover,
+        .hud-links a:hover,
+        .hud-links button:focus-visible,
+        .hud-links a:focus-visible {
+            color: var(--ink);
+            outline: none;
+        }
+
+        /* Compact pause/drawer sheet — not a glowing essay covering the maze. */
+        #drawer {
+            position: absolute;
+            left: 50%;
+            bottom: max(20px, env(safe-area-inset-bottom));
+            transform: translateX(-50%);
+            width: min(420px, calc(100vw - 28px));
+            max-height: min(52vh, 420px);
+            overflow: auto;
+            padding: 16px 16px 14px;
+            background: var(--sheet);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            backdrop-filter: blur(16px);
+            text-align: left;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+        }
+
+        #drawer[hidden] {
+            display: none;
+        }
+
+        .drawer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .drawer-bar h2 {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+
+        .drawer-close {
+            appearance: none;
+            background: none;
+            border: 1px solid var(--line);
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 4px 12px;
+            font: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .drawer-close:hover,
+        .drawer-close:focus-visible {
+            background: var(--ink);
+            color: #111;
+            outline: none;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px 16px;
+            font-size: 0.86rem;
+        }
+
+        .controls-grid strong {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .controls-grid div > div {
+            color: var(--ink);
+            margin-bottom: 2px;
+        }
+
+        kbd {
+            display: inline-block;
+            min-width: 1.4em;
+            padding: 1px 6px;
+            margin-right: 4px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            font-family: inherit;
+            font-size: 0.78em;
+        }
+
+        .muted {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-top: 10px;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 11px 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            color: var(--ink);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .download-btn:hover,
+        .download-btn:focus-visible {
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+        }
+
+        .download-btn .platform {
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+        }
+
+        .download-btn .size {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: var(--muted);
+            border-top: 1px solid var(--line);
+            padding-top: 10px;
+            margin-top: 6px;
+        }
+
+        .note code {
+            display: block;
+            margin-top: 6px;
+            padding: 6px 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 6px;
+            font-size: 0.72rem;
+            word-break: break-all;
+            color: var(--ink);
+        }
+
+        .preview-load {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: none;
+            border: 1px dashed var(--line);
+            border-radius: 10px;
+            color: var(--muted);
+            font: inherit;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .preview-load:hover,
+        .preview-load:focus-visible {
+            color: var(--ink);
+            outline: none;
         }
 
         .video-wrap {
             position: relative;
+            margin-top: 10px;
             padding-bottom: 56.25%;
             height: 0;
             overflow: hidden;
-            border: 1px solid #00ff00;
+            border-radius: 8px;
             background: #000;
         }
 
@@ -109,146 +370,19 @@
             border: 0;
         }
 
-        .muted {
-            font-size: 0.75em;
-            color: #00aa00;
-            margin-top: 8px;
-        }
+        @media (max-width: 640px) {
+            .title {
+                letter-spacing: 0.1em;
+            }
 
-        .download-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px 8px;
-            margin-bottom: 10px;
-            background: rgba(0, 255, 0, 0.1);
-            border: 2px solid #00ff00;
-            color: #00ff00;
-            text-decoration: none;
-            text-align: center;
-            font-size: 0.9em;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .download-btn:hover {
-            background: rgba(0, 255, 0, 0.2);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-        }
-
-        .download-btn .platform {
-            display: block;
-            margin-bottom: 3px;
-        }
-
-        .download-btn .size {
-            font-size: 0.7em;
-            color: #00cc00;
-        }
-
-        .note {
-            font-size: 0.72em;
-            color: #00cc00;
-            border: 1px solid #007700;
-            padding: 8px;
-        }
-
-        .note code {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 1px 5px;
-            word-break: break-all;
-        }
-
-        .controls-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            font-size: 0.82em;
-        }
-
-        .controls-grid strong {
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .controls-grid div > div {
-            color: #00cc00;
-        }
-
-        kbd {
-            background: rgba(0, 255, 0, 0.2);
-            padding: 1px 6px;
-            border: 1px solid #00ff00;
-            border-radius: 3px;
-        }
-
-        .side-footer {
-            margin-top: auto;
-            text-align: center;
-        }
-
-        .github-link {
-            color: #00ff00;
-            text-decoration: none;
-            display: inline-block;
-            padding: 6px 12px;
-            border: 1px solid #00ff00;
-            transition: all 0.2s;
-            font-size: 0.82em;
-        }
-
-        .github-link:hover {
-            background: rgba(0, 255, 0, 0.1);
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        }
-
-        /* Big centered PLAY button. */
-        #play-btn {
-            position: absolute;
-            top: 50%;
-            left: calc(50% + min(190px, 44vw) / 2);
-            transform: translate(-50%, -50%);
-            padding: 22px 60px;
-            font-family: inherit;
-            font-size: 2em;
-            font-weight: bold;
-            letter-spacing: 6px;
-            color: #00ff00;
-            background: rgba(0, 20, 0, 0.7);
-            border: 2px solid #00ff00;
-            text-transform: uppercase;
-            cursor: pointer;
-            text-shadow: 0 0 10px #00ff00;
-            box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
-            transition: all 0.2s;
-        }
-
-        #play-btn:hover {
-            background: rgba(0, 40, 0, 0.85);
-            box-shadow: 0 0 40px rgba(0, 255, 0, 0.7);
-            transform: translate(-50%, -50%) scale(1.05);
-        }
-
-        #play-hint {
-            position: absolute;
-            top: calc(50% + 70px);
-            left: calc(50% + min(190px, 44vw) / 2);
-            transform: translateX(-50%);
-            font-size: 0.8em;
-            color: #00aa00;
-            white-space: nowrap;
-        }
-
-        @media (max-width: 760px) {
-            #sidebar { width: 100vw; border-right: 0; }
-            #play-btn, #play-hint { left: 50%; }
-            #play-btn { transform: translate(-50%, -50%); }
+            .controls-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Game WASM build (iframe embed only — public URL is / with sidebar). -->
+    <!-- Game WASM build (iframe embed only — public URL is / with overlay). -->
     <iframe
         id="game-frame"
         title="Matrix Maze"
@@ -257,43 +391,26 @@
         allowfullscreen></iframe>
 
     <div id="overlay">
-        <aside id="sidebar">
-            <div class="brand">
-                <div class="brand-title">MATRIX MAZE</div>
-                <div class="brand-tag">Navigate the labyrinth, escape the matrix.</div>
+        <div class="hud">
+            <p class="pause-mark">Paused</p>
+            <h1 class="title">Matrix Maze</h1>
+            <p class="tag">Navigate the labyrinth, escape the matrix.</p>
+            <button id="play-btn" type="button">Play</button>
+            <p id="play-hint">Press <kbd>Esc</kbd> anytime to pause</p>
+            <nav class="hud-links" aria-label="Shell">
+                <button type="button" data-open="howto">How to play</button>
+                <button type="button" data-open="download">Download</button>
+                <a href="https://github.com/ledoit/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
+            </nav>
+        </div>
+
+        <aside id="drawer" hidden>
+            <div class="drawer-bar">
+                <h2 id="drawer-title">How to play</h2>
+                <button type="button" class="drawer-close" id="drawer-close">Close</button>
             </div>
 
-            <section class="panel">
-                <h2>Updates</h2>
-                <div class="video-wrap">
-                    <iframe
-                        title="Matrix Maze gameplay preview"
-                        src="https://www.youtube-nocookie.com/embed/6abATi96C7o?modestbranding=1&rel=0&controls=1&fs=1"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen></iframe>
-                </div>
-                <p class="muted">Latest gameplay preview.</p>
-            </section>
-
-            <section class="panel" id="download">
-                <h2>Download</h2>
-                <a href="#" class="download-btn" id="download-macos" title="Download for macOS">
-                    <span class="platform">🍎 macOS</span>
-                    <span class="size" id="macos-version">Loading...</span>
-                </a>
-                <a href="#" class="download-btn" id="download-windows" title="Download for Windows">
-                    <span class="platform">🪟 Windows</span>
-                    <span class="size" id="windows-version">Loading...</span>
-                </a>
-                <p class="note">
-                    <strong>macOS Users:</strong> If you see "app is damaged" after installation,
-                    right-click the app and select "Open", or run this in Terminal:
-                    <code>xattr -cr /Applications/Matrix\ Maze.app</code>
-                </p>
-            </section>
-
-            <section class="panel">
-                <h2>How to Play</h2>
+            <section id="panel-howto">
                 <div class="controls-grid">
                     <div>
                         <strong>Movement</strong>
@@ -314,13 +431,26 @@
                 <p class="muted">Reach the exit of all 8 levels as fast as you can.</p>
             </section>
 
-            <div class="side-footer">
-                <a class="github-link" href="https://github.com/ledoit/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
-            </div>
+            <section id="panel-download" hidden>
+                <div id="download">
+                    <a href="#" class="download-btn" id="download-macos" title="Download for macOS">
+                        <span class="platform">macOS</span>
+                        <span class="size" id="macos-version">Loading...</span>
+                    </a>
+                    <a href="#" class="download-btn" id="download-windows" title="Download for Windows">
+                        <span class="platform">Windows</span>
+                        <span class="size" id="windows-version">Loading...</span>
+                    </a>
+                    <p class="note">
+                        <strong>macOS:</strong> If you see "app is damaged" after installation,
+                        right-click the app and select "Open", or run this in Terminal:
+                        <code>xattr -cr /Applications/Matrix\ Maze.app</code>
+                    </p>
+                    <button type="button" class="preview-load" id="preview-load">Watch gameplay preview</button>
+                    <div class="video-wrap" id="preview-frame" hidden></div>
+                </div>
+            </section>
         </aside>
-
-        <button id="play-btn" type="button">▶ Play</button>
-        <div id="play-hint">Press <kbd>Esc</kbd> anytime to pause</div>
     </div>
 
     <script>
@@ -328,15 +458,36 @@
         const overlay = document.getElementById('overlay');
         const playBtn = document.getElementById('play-btn');
         const gameFrame = document.getElementById('game-frame');
+        const drawer = document.getElementById('drawer');
+        const drawerTitle = document.getElementById('drawer-title');
+        const panelHowto = document.getElementById('panel-howto');
+        const panelDownload = document.getElementById('panel-download');
         let hasStarted = false;
+
+        function closeDrawer() {
+            if (!drawer) return;
+            drawer.hidden = true;
+        }
+
+        function openDrawer(name) {
+            if (!drawer || !panelHowto || !panelDownload || !drawerTitle) return;
+            const howto = name === 'howto';
+            panelHowto.hidden = !howto;
+            panelDownload.hidden = howto;
+            drawerTitle.textContent = howto ? 'How to play' : 'Download';
+            drawer.hidden = false;
+        }
 
         function showOverlay() {
             overlay.classList.remove('playing');
-            playBtn.textContent = hasStarted ? '▶ Resume' : '▶ Play';
+            overlay.classList.toggle('started', hasStarted);
+            playBtn.textContent = hasStarted ? 'Resume' : 'Play';
+            closeDrawer();
         }
 
         function hideOverlay() {
             overlay.classList.add('playing');
+            closeDrawer();
         }
 
         // The game (in the iframe) reports its state; mirror it in the overlay.
@@ -360,6 +511,28 @@
             }
             hideOverlay();
             try { gameFrame.contentWindow.focus(); } catch (_) {}
+        });
+
+        document.querySelectorAll('[data-open]').forEach((btn) => {
+            btn.addEventListener('click', () => openDrawer(btn.getAttribute('data-open')));
+        });
+        document.getElementById('drawer-close')?.addEventListener('click', closeDrawer);
+
+        const previewLoad = document.getElementById('preview-load');
+        const previewFrame = document.getElementById('preview-frame');
+        previewLoad?.addEventListener('click', () => {
+            if (!previewFrame || previewFrame.querySelector('iframe')) {
+                if (previewFrame) previewFrame.hidden = false;
+                return;
+            }
+            const iframe = document.createElement('iframe');
+            iframe.title = 'Matrix Maze gameplay preview';
+            iframe.src = 'https://www.youtube-nocookie.com/embed/6abATi96C7o?modestbranding=1&rel=0&controls=1&fs=1';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+            iframe.allowFullscreen = true;
+            previewFrame.appendChild(iframe);
+            previewFrame.hidden = false;
+            previewLoad.hidden = true;
         });
 
         // --- Desktop release downloads (unchanged logic, GitHub releases proxy) ---
