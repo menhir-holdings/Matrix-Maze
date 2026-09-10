@@ -7,8 +7,8 @@
     {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "matrix-maze-kappa.vercel.app" }],
-      "destination": "https://matrix-maze.menhir-holdings.com/:path*",
-      "permanent": true
+      "destination": "https://matmaz.vercel.app/:path*",
+      "permanent": false
     },
     {
       "source": "/play",
