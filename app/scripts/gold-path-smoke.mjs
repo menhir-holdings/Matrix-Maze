@@ -26,6 +26,11 @@ async function main() {
   const landing = await fetchText('/');
   assertIncludes(landing.text, 'id="play-btn"', 'landing play button');
   assertIncludes(landing.text, '/game/', 'embedded game iframe');
+  assertIncludes(landing.text, 'id="finish-plate"', 'landing finish plate');
+  assertIncludes(landing.text, 'favicon.svg', 'landing favicon');
+  if (landing.text.includes('#9c968b')) {
+    throw new Error('landing: mid-grey #9c968b must not remain');
+  }
   checks.push(`landing ${landing.url}`);
 
   const game = await fetchText('/game/');

@@ -1,4 +1,4 @@
-use crate::maze::Maze;
+use crate::maze::{Maze, PLAYER_RADIUS};
 use crate::platform;
 use crate::raycast::cast_ray;
 use serde::{Deserialize, Serialize};
@@ -68,6 +68,29 @@ pub struct PlayerInput {
     pub delta_time: f64, // Time elapsed since last frame in seconds
 }
 
+/// Blank a plate behind HUD text so letters sit on black, not dither.
+fn stamp_line(line: &mut [char], width: usize, text: &str, blank_plate: bool) {
+    if width == 0 {
+        return;
+    }
+    if blank_plate {
+        for slot in line.iter_mut().take(width) {
+            *slot = ' ';
+        }
+    }
+    if text.is_empty() {
+        return;
+    }
+    let count = text.chars().count();
+    let start = width.saturating_sub(count) / 2;
+    for (i, ch) in text.chars().enumerate() {
+        let col = start + i;
+        if col < width {
+            line[col] = ch;
+        }
+    }
+}
+
 impl GameState {
     pub fn new() -> Self {
         let (best_times, best_total_time) = Self::load_best_times();
@@ -98,6 +121,34 @@ impl GameState {
             // Restart from level 1
             Self::new()
         }
+    }
+
+    /// Replay the current level: new maze, same level index, prior run times kept.
+    /// If this level was already scored, drop that split and subtract it from total.
+    pub fn replay_level(&self) -> Self {
+        let mut run_times = self.run_times.clone();
+        let level_idx = (self.current_level.saturating_sub(1)) as usize;
+        if level_idx < run_times.len() {
+            run_times[level_idx] = None;
+        }
+
+        let mut total_time = self.total_time;
+        if self.has_won {
+            if let Some(t) = self.level_completion_time {
+                total_time = (total_time - t).max(0.0);
+            }
+        }
+
+        let mut next = Self::new_level(
+            self.current_level,
+            run_times,
+            self.best_times.clone(),
+            self.best_total_time,
+            total_time,
+        );
+        next.new_record_level = None;
+        next.new_record_total = false;
+        next
     }
     
     pub fn new_level(level: u8, run_times: Vec<Option<f64>>, best_times: Vec<Option<f64>>, best_total_time: Option<f64>, total_time: f64) -> Self {
@@ -270,43 +321,34 @@ impl GameState {
             self.player_angle += 2.0 * std::f64::consts::PI;
         }
 
-        // Handle movement
-        let dx = self.player_angle.cos() * move_speed;
-        let dy = self.player_angle.sin() * move_speed;
-
+        // One wish vector, then Quake/Source move-slide (not per-key axis lock).
+        let mut wish_x = 0.0;
+        let mut wish_y = 0.0;
         if input.forward {
-            let new_x = self.player_x + dx;
-            let new_y = self.player_y + dy;
-            if !maze.get_cell(new_x, new_y) {
-                self.player_x = new_x;
-                self.player_y = new_y;
-            }
+            wish_x += self.player_angle.cos();
+            wish_y += self.player_angle.sin();
         }
         if input.backward {
-            let new_x = self.player_x - dx;
-            let new_y = self.player_y - dy;
-            if !maze.get_cell(new_x, new_y) {
-                self.player_x = new_x;
-                self.player_y = new_y;
-            }
+            wish_x -= self.player_angle.cos();
+            wish_y -= self.player_angle.sin();
         }
         if input.left {
             let left_angle = self.player_angle - std::f64::consts::PI / 2.0;
-            let new_x = self.player_x + left_angle.cos() * move_speed;
-            let new_y = self.player_y + left_angle.sin() * move_speed;
-            if !maze.get_cell(new_x, new_y) {
-                self.player_x = new_x;
-                self.player_y = new_y;
-            }
+            wish_x += left_angle.cos();
+            wish_y += left_angle.sin();
         }
         if input.right {
             let right_angle = self.player_angle + std::f64::consts::PI / 2.0;
-            let new_x = self.player_x + right_angle.cos() * move_speed;
-            let new_y = self.player_y + right_angle.sin() * move_speed;
-            if !maze.get_cell(new_x, new_y) {
-                self.player_x = new_x;
-                self.player_y = new_y;
-            }
+            wish_x += right_angle.cos();
+            wish_y += right_angle.sin();
+        }
+        let wish_len = (wish_x * wish_x + wish_y * wish_y).sqrt();
+        if wish_len > 0.0 {
+            let dx = wish_x / wish_len * move_speed;
+            let dy = wish_y / wish_len * move_speed;
+            let (nx, ny) = maze.move_slide(self.player_x, self.player_y, dx, dy, PLAYER_RADIUS);
+            self.player_x = nx;
+            self.player_y = ny;
         }
         
         // Check if player reached the exit - stop movement
@@ -520,7 +562,7 @@ impl GameState {
                 "Best: --:--".to_string()
             };
             
-            let next_level_str = "Press SPACE to continue";
+            let next_level_str = "SPACE continue   R replay level";
             
             let art_height = ascii_art.len();
             let art_start_row = (height.saturating_sub(art_height + 4)) / 2;
@@ -555,49 +597,20 @@ impl GameState {
                 if row_idx >= art_start_row && row_idx < art_start_row + art_height {
                     let art_line_idx = row_idx - art_start_row;
                     if art_line_idx < ascii_art.len() {
-                        let art_line = ascii_art[art_line_idx];
-                        let art_start_col = if art_line.len() <= width {
-                            (width - art_line.len()) / 2
-                        } else {
-                            0
-                        };
-                        for (i, ch) in art_line.chars().enumerate() {
-                            let col_idx = art_start_col + i;
-                            if col_idx < width {
-                                new_line[col_idx] = ch;
-                            }
-                        }
+                        stamp_line(&mut new_line, width, ascii_art[art_line_idx], true);
                     }
                 }
                 // Overlay level time message with personal best
                 else if row_idx == time_row {
-                    let time_start_col = width.saturating_sub(time_with_pb.len()) / 2;
-                    for (i, ch) in time_with_pb.chars().enumerate() {
-                        let col_idx = time_start_col + i;
-                        if col_idx < width {
-                            new_line[col_idx] = ch;
-                        }
-                    }
+                    stamp_line(&mut new_line, width, &time_with_pb, true);
                 }
                 // Overlay best level time
                 else if row_idx == best_row {
-                    let best_start_col = width.saturating_sub(best_level_time_str.len()) / 2;
-                    for (i, ch) in best_level_time_str.chars().enumerate() {
-                        let col_idx = best_start_col + i;
-                        if col_idx < width {
-                            new_line[col_idx] = ch;
-                        }
-                    }
+                    stamp_line(&mut new_line, width, &best_level_time_str, true);
                 }
                 // Overlay next level message at bottom
                 else if row_idx == next_row {
-                    let next_start_col = width.saturating_sub(next_level_str.len()) / 2;
-                    for (i, ch) in next_level_str.chars().enumerate() {
-                        let col_idx = next_start_col + i;
-                        if col_idx < width {
-                            new_line[col_idx] = ch;
-                        }
-                    }
+                    stamp_line(&mut new_line, width, next_level_str, true);
                 }
                 
                 new_frame.push_str(&new_line.iter().collect::<String>());
@@ -618,28 +631,31 @@ impl GameState {
             if phase < 0.625 { // Show for 62.5% of cycle (0.5s / 0.8s)
                 let message = format!("LEVEL {} - FIND THE EXIT!", self.current_level);
                 let message_row = height / 2;
-                let message_start_col = width.saturating_sub(message.len()) / 2;
-            
-            let lines: Vec<&str> = frame.split('\n').collect();
-            let mut new_frame = String::new();
-            for (row_idx, line) in lines.iter().enumerate() {
-                if row_idx == message_row {
-                        // Overlay "FIND THE EXIT!" message
-                    let mut new_line = line.chars().collect::<Vec<_>>();
-                    for (i, ch) in message.chars().enumerate() {
-                        if message_start_col + i < new_line.len() {
-                            new_line[message_start_col + i] = ch;
+
+                let lines: Vec<&str> = frame.split('\n').collect();
+                let mut new_frame = String::new();
+                for (row_idx, line) in lines.iter().enumerate() {
+                    let mut new_line: Vec<char> = line.chars().take(width).collect();
+                    while new_line.len() < width {
+                        new_line.push(' ');
+                    }
+                    new_line.truncate(width);
+                    // Clear a 3-row band so the cue sits on black, not dither.
+                    if row_idx + 1 >= message_row && row_idx <= message_row + 1 {
+                        if row_idx == message_row {
+                            stamp_line(&mut new_line, width, &message, true);
+                        } else {
+                            for ch in new_line.iter_mut() {
+                                *ch = ' ';
+                            }
                         }
                     }
                     new_frame.push_str(&new_line.iter().collect::<String>());
-                } else {
-                    new_frame.push_str(line);
+                    if row_idx < lines.len() - 1 {
+                        new_frame.push('\n');
+                    }
                 }
-                if row_idx < lines.len() - 1 {
-                    new_frame.push('\n');
-                }
-            }
-            return new_frame;
+                return new_frame;
             }
         }
         
@@ -741,7 +757,7 @@ impl GameState {
             format!("Total: {}", total_time_str),
             format!("Best total: {}", best_total_str),
             String::new(), // Empty line
-            "Press SPACE to play again".to_string(),
+            "Name the run on the plate — or SPACE to play again".to_string(),
         ];
         
         // Calculate starting row (center vertically, accounting for ASCII art)
@@ -767,18 +783,7 @@ impl GameState {
             if row_idx >= art_start_row && row_idx < art_start_row + art_height {
                 let art_line_idx = row_idx - art_start_row;
                 if art_line_idx < ascii_art.len() {
-                    let art_line = ascii_art[art_line_idx];
-                    let art_start_col = if art_line.len() <= width {
-                        (width - art_line.len()) / 2
-                    } else {
-                        0
-                    };
-                    for (i, ch) in art_line.chars().enumerate() {
-                        let col_idx = art_start_col + i;
-                        if col_idx < width {
-                            new_line[col_idx] = ch;
-                        }
-                    }
+                    stamp_line(&mut new_line, width, ascii_art[art_line_idx], true);
                 }
             }
             
@@ -788,13 +793,7 @@ impl GameState {
                 if text_idx < texts.len() {
                     let text = &texts[text_idx];
                     if !text.is_empty() {
-                        let text_start_col = width.saturating_sub(text.len()) / 2;
-                        for (i, ch) in text.chars().enumerate() {
-                            let col_idx = text_start_col + i;
-                            if col_idx < width {
-                                new_line[col_idx] = ch;
-                            }
-                        }
+                        stamp_line(&mut new_line, width, text, true);
                     }
                 }
             }
@@ -865,6 +864,21 @@ mod gold_path_tests {
             assert_eq!(next.run_times[level as usize - 1], Some(level as f64 * 5.0));
             state = next;
         }
+    }
+
+    #[test]
+    fn replay_level_keeps_index_and_drops_current_split() {
+        let mut state = GameState::new();
+        state.has_won = true;
+        state.level_completion_time = Some(9.0);
+        state.total_time = 9.0;
+        state.run_times[0] = Some(9.0);
+
+        let replayed = state.replay_level();
+        assert_eq!(replayed.current_level, 1);
+        assert!(!replayed.has_won);
+        assert_eq!(replayed.run_times[0], None);
+        assert_eq!(replayed.total_time, 0.0);
     }
 }
 

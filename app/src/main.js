@@ -1,6 +1,18 @@
 import { createBackend } from './backend.js';
 import { LEVEL_COLORS } from './constants.js';
 import { AdaptiveMusic } from './music.js';
+import { bindArcadePlate } from './arcade-plate.js';
+import {
+    fetchScores,
+    finishPayloadFromState,
+    formatClock,
+    loadDisplayName,
+    recordLevel,
+    renderBoardList,
+    submitScore,
+} from './scores.js';
+
+const loadBoardName = loadDisplayName;
 
 // Initialize colors from constants - sets CSS variables
 function updateColorRgbValues() {
@@ -48,6 +60,148 @@ let viewportHeight = 40;
 const music = new AdaptiveMusic();
 let hasWonScreen = false;
 let advancingLevel = false;
+let finishNotified = false;
+let recordedWinKey = null;
+let arcade = null;
+
+function winKey(stateObj) {
+    if (!stateObj?.has_won) return null;
+    return `${stateObj.current_level}:${stateObj.level_completion_time ?? ''}:${stateObj.total_time ?? ''}`;
+}
+
+function recordWinScores(stateObj) {
+    const key = winKey(stateObj);
+    if (!key || key === recordedWinKey) return;
+    recordedWinKey = key;
+    const time = stateObj.level_completion_time;
+    if (typeof time === 'number') {
+        recordLevel({
+            name: loadDisplayName() || 'RUNNER',
+            level: stateObj.current_level,
+            time,
+        });
+    }
+}
+
+function notifyFinish(stateObj) {
+    if (!stateObj?.has_won || stateObj.current_level !== 8 || finishNotified) return;
+    finishNotified = true;
+    const payload = finishPayloadFromState(stateObj);
+    if (shellControlled) {
+        try {
+            window.parent.postMessage(
+                { source: 'mm-game', type: 'run-complete', run: payload, ...payload },
+                window.location.origin
+            );
+        } catch (err) {
+            console.warn('finish post failed:', err);
+        }
+        pauseToShell();
+        return;
+    }
+    arcade?.showFinish(payload);
+}
+
+function bindStandaloneFinish(root, { onPlayAgain } = {}) {
+    if (!root) return null;
+    const timeEl = root.querySelector('#finish-time');
+    const form = root.querySelector('#name-form');
+    const nameInput = root.querySelector('#display-name');
+    const errEl = root.querySelector('#plate-error');
+    const wrap = root.querySelector('#board-wrap');
+    const list = root.querySelector('#board-list');
+    const filter = root.querySelector('#board-filter');
+    const again = root.querySelector('#play-again');
+    let pending = null;
+    let rows = [];
+    let highlightId = null;
+
+    function paint() {
+        renderBoardList(list, rows, { filter: filter?.value || 'run', highlightId });
+    }
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!pending) return;
+        if (errEl) errEl.textContent = '';
+        try {
+            const result = await submitScore({
+                name: nameInput?.value,
+                total: pending.total,
+                levels: pending.levels,
+            });
+            rows = result.scores || [];
+            highlightId = result.score?.id || null;
+            if (form) form.hidden = true;
+            if (wrap) wrap.hidden = false;
+            paint();
+        } catch (err) {
+            if (errEl) errEl.textContent = err.message;
+        }
+    });
+    filter?.addEventListener('change', paint);
+    again?.addEventListener('click', () => onPlayAgain?.());
+
+    return {
+        async showFinish(payload) {
+            pending = payload;
+            highlightId = null;
+            root.hidden = false;
+            if (form) form.hidden = false;
+            if (wrap) wrap.hidden = true;
+            if (timeEl) timeEl.textContent = formatClock(payload?.total);
+            if (nameInput) nameInput.value = loadBoardName();
+            if (errEl) errEl.textContent = '';
+            try {
+                const data = await fetchScores();
+                rows = data.scores;
+            } catch {
+                rows = [];
+            }
+            nameInput?.focus();
+        },
+        hide() {
+            root.hidden = true;
+        },
+        render: paint,
+    };
+}
+
+async function replayIfWon() {
+    if (advancingLevel) return false;
+    if (!hasWonScreen) return false;
+    const stateObj = parseGameState();
+    if (!stateObj) return false;
+
+    advancingLevel = true;
+    try {
+        gameState = await backend.replayLevel(gameState);
+        hasWonScreen = false;
+        recordedWinKey = null;
+        finishNotified = false;
+        arcade?.hide();
+        if (viewport) viewport.focus();
+        return true;
+    } finally {
+        advancingLevel = false;
+    }
+}
+
+async function playAgainFromPlate() {
+    if (advancingLevel) return;
+    advancingLevel = true;
+    try {
+        gameState = await backend.initGame();
+        hasWonScreen = false;
+        recordedWinKey = null;
+        finishNotified = false;
+        arcade?.hide();
+        lastFrameTime = performance.now() / 1000.0;
+        if (viewport) viewport.focus();
+    } finally {
+        advancingLevel = false;
+    }
+}
 
 function parseGameState() {
     if (!gameState) return null;
@@ -62,10 +216,17 @@ async function advanceIfWon() {
     if (advancingLevel) return false;
     if (!hasWonScreen) return false;
 
+    const stateObj = parseGameState();
+    if (stateObj?.current_level === 8) {
+        notifyFinish(stateObj);
+        return false;
+    }
+
     advancingLevel = true;
     try {
         gameState = await backend.nextLevel(gameState);
         hasWonScreen = false;
+        recordedWinKey = null;
         if (viewport) viewport.focus();
         return true;
     } finally {
@@ -99,6 +260,14 @@ async function init() {
 
     // Wire up on-screen touch controls for mobile web
     setupTouchControls();
+
+    const finishRoot = document.getElementById('finish-plate');
+    const arcadeRoot = document.getElementById('arcade-plate');
+    if (finishRoot) {
+        arcade = bindStandaloneFinish(finishRoot, { onPlayAgain: playAgainFromPlate });
+    } else if (arcadeRoot) {
+        arcade = bindArcadePlate(arcadeRoot, { onPlayAgain: playAgainFromPlate });
+    }
     
     // Set up FPS-style mouse look using Pointer Lock API
     viewport.addEventListener('click', async () => {
@@ -227,10 +396,10 @@ function setupTouchControls() {
 // --- Embedded-shell play/pause coordination (web landing only) ---
 
 // Notifies the parent landing shell of a state change ('ready' | 'playing' | 'paused').
-function postToShell(type) {
+function postToShell(type, payload) {
     if (!shellControlled) return;
     try {
-        window.parent.postMessage({ source: 'mm-game', type }, window.location.origin);
+        window.parent.postMessage({ source: 'mm-game', type, payload }, window.location.origin);
     } catch (err) {
         console.warn('postToShell failed:', err);
     }
@@ -242,6 +411,14 @@ function handleShellMessage(e) {
     if (!data || data.source !== 'mm-shell') return;
     if (data.type === 'play') {
         startPlaying();
+    } else if (data.type === 'restart' || data.type === 'play-again') {
+        playAgainFromPlate().then(() => {
+            if (paused) startPlaying();
+        });
+    } else if (data.type === 'replay') {
+        replayIfWon().then(() => {
+            if (paused) startPlaying();
+        });
     }
 }
 
@@ -403,6 +580,12 @@ async function gameLoop() {
             music.playLevelComplete(stateAfterUpdate.current_level || 1);
         }
         syncWinScreenFlag(stateAfterUpdate);
+        if (stateAfterUpdate?.has_won) {
+            recordWinScores(stateAfterUpdate);
+            if (stateAfterUpdate.current_level === 8) {
+                notifyFinish(stateAfterUpdate);
+            }
+        }
 
         // Display frame
         displayFrame(frame);
@@ -489,6 +672,7 @@ document.addEventListener(
     'keydown',
     async (e) => {
         if (paused && e.key !== 'Escape') return;
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
         if (e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'Enter') return;
         if (!hasWonScreen) return;
         e.preventDefault();
@@ -533,6 +717,12 @@ window.addEventListener('keydown', async (e) => {
         case 'e':
             keys.e = true;
             e.preventDefault();
+            break;
+        case 'r':
+            if (hasWonScreen) {
+                e.preventDefault();
+                await replayIfWon();
+            }
             break;
         case 'escape':
             if (shellControlled) {

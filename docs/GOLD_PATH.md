@@ -31,7 +31,7 @@ Run once per browser after a hard refresh (empty cache). Production URL unless t
 | Reach exit — level-complete overlay | ☐ | ☐ | ☐ |
 | Space / Enter / tap advances to next level | ☐ | ☐ | ☐ |
 | Levels 2–8 complete without reload | ☐ | ☐ | ☐ |
-| After level 8 — run summary + play again | ☐ | ☐ | ☐ |
+| After level 8 — name plate + board + play again | ☐ | ☐ | ☐ |
 
 **Controls:** WASD move, Q/E turn, SPACE (or tap viewport on Windows) after win.
 

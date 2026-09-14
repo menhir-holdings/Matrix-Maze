@@ -6,16 +6,19 @@
     <meta name="theme-color" content="#050505">
     <meta name="description" content="Matrix Maze — a 3D ASCII labyrinth. Play in the browser or download for macOS and Windows.">
     <title>Matrix Maze</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #f4f1ea;
-            --muted: #9c968b;
-            --line: rgba(244, 241, 234, 0.28);
-            --cabinet: rgba(8, 8, 10, 0.55);
-            --sheet: rgba(10, 10, 12, 0.88);
+            --ink: #f7f4ec;
+            --muted: #e6e0d2;
+            --line: rgba(247, 244, 236, 0.48);
+            --cabinet: rgba(8, 8, 10, 0.82);
+            --sheet: rgba(6, 6, 8, 0.94);
+            --read-shadow: 0 1px 2px #000, 0 0 18px rgba(0, 0, 0, 0.92);
         }
 
         * {
@@ -57,12 +60,12 @@
             align-items: center;
             justify-content: center;
             padding: 28px 20px 32px;
-            background: radial-gradient(ellipse at 50% 42%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.7) 72%);
+            background: rgba(0, 0, 0, 0.78);
             transition: background 0.25s ease;
         }
 
         #overlay.started {
-            background: rgba(0, 0, 0, 0.64);
+            background: rgba(0, 0, 0, 0.82);
         }
 
         #overlay.playing {
@@ -76,6 +79,12 @@
             text-align: center;
             gap: 18px;
             max-width: 36rem;
+            padding: 22px 26px 20px;
+            background: var(--sheet);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(16px);
         }
 
         .pause-mark {
@@ -99,6 +108,10 @@
             display: none;
         }
 
+        #overlay.finish .hud {
+            display: none;
+        }
+
         .title {
             font-family: Oswald, ui-sans-serif, sans-serif;
             font-size: clamp(2.6rem, 9vw, 6.2rem);
@@ -107,7 +120,7 @@
             line-height: 0.95;
             text-transform: uppercase;
             color: var(--ink);
-            text-shadow: 0 2px 28px rgba(0, 0, 0, 0.85);
+            text-shadow: var(--read-shadow);
         }
 
         .tag {
@@ -116,6 +129,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--muted);
+            text-shadow: var(--read-shadow);
         }
 
         #play-btn {
@@ -145,6 +159,7 @@
         #play-hint {
             font-size: 0.78rem;
             color: var(--muted);
+            text-shadow: var(--read-shadow);
         }
 
         .hud-links {
@@ -166,9 +181,10 @@
             font-weight: 500;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--muted);
+            color: var(--ink);
             text-decoration: none;
             cursor: pointer;
+            text-shadow: var(--read-shadow);
         }
 
         .hud-links button:hover,
@@ -370,6 +386,141 @@
             border: 0;
         }
 
+        #finish-plate {
+            width: min(420px, calc(100vw - 28px));
+            max-height: min(78vh, 640px);
+            overflow: auto;
+            padding: 20px 18px 16px;
+            background: var(--sheet);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+            text-align: left;
+        }
+
+        #finish-plate[hidden] {
+            display: none;
+        }
+
+        .plate-kicker,
+        .board-toolbar h2 {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink);
+            text-shadow: var(--read-shadow);
+        }
+
+        .plate-time {
+            margin: 8px 0 16px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--ink);
+            text-shadow: var(--read-shadow);
+        }
+
+        #name-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        #display-name {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            font: inherit;
+            font-size: 1rem;
+            color: var(--ink);
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        #display-name:focus {
+            outline: 2px solid var(--ink);
+        }
+
+        #name-form button,
+        #play-again,
+        #board-again {
+            width: 100%;
+            padding: 11px 16px;
+            font: inherit;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #111;
+            background: var(--ink);
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        #play-again,
+        #board-again {
+            margin-top: 12px;
+        }
+
+        .plate-error {
+            min-height: 1.2em;
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            color: #ffd4a8;
+        }
+
+        .board-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        #board-filter {
+            font: inherit;
+            color: var(--ink);
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 4px 8px;
+        }
+
+        #board-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #board-list li {
+            display: grid;
+            grid-template-columns: 2rem 1fr auto;
+            gap: 8px;
+            padding: 7px 4px;
+            border-bottom: 1px solid var(--line);
+            color: var(--ink);
+            font-size: 0.92rem;
+        }
+
+        #board-list li.is-you {
+            background: rgba(247, 244, 236, 0.12);
+        }
+
+        #board-list .board-empty {
+            display: block;
+            padding: 12px 4px;
+            color: var(--muted);
+        }
+
+        #overlay:not(.finish) #finish-plate {
+            display: none;
+        }
+
         @media (max-width: 640px) {
             .title {
                 letter-spacing: 0.1em;
@@ -399,10 +550,42 @@
             <p id="play-hint">Press <kbd>Esc</kbd> anytime to pause</p>
             <nav class="hud-links" aria-label="Shell">
                 <button type="button" data-open="howto">How to play</button>
+                <button type="button" id="open-board">Board</button>
                 <button type="button" data-open="download">Download</button>
-                <a href="https://github.com/ledoit/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/menhir-holdings/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
             </nav>
         </div>
+
+        <aside id="finish-plate" hidden>
+            <p class="plate-kicker">Run complete</p>
+            <p class="plate-time" id="finish-time">--:--.--</p>
+            <form id="name-form">
+                <label for="display-name">Your name</label>
+                <input id="display-name" name="display-name" maxlength="16" autocomplete="nickname" required>
+                <button type="submit">Submit time</button>
+                <p class="plate-error" id="plate-error"></p>
+            </form>
+            <div id="board-wrap" hidden>
+                <div class="board-toolbar">
+                    <h2>Board</h2>
+                    <label class="visually-hidden" for="board-filter">Sort</label>
+                    <select id="board-filter">
+                        <option value="run">Full run</option>
+                        <option value="1">Level 1</option>
+                        <option value="2">Level 2</option>
+                        <option value="3">Level 3</option>
+                        <option value="4">Level 4</option>
+                        <option value="5">Level 5</option>
+                        <option value="6">Level 6</option>
+                        <option value="7">Level 7</option>
+                        <option value="8">Level 8</option>
+                    </select>
+                </div>
+                <ol id="board-list"></ol>
+                <button type="button" id="play-again">Play again</button>
+            </div>
+            <button type="button" id="board-again" hidden>Close</button>
+        </aside>
 
         <aside id="drawer" hidden>
             <div class="drawer-bar">
@@ -425,6 +608,7 @@
                         <div><kbd>E</kbd> Turn Right</div>
                         <strong style="margin-top:10px;">Game</strong>
                         <div><kbd>Space</kbd> Next Level</div>
+                        <div><kbd>R</kbd> Replay level</div>
                         <div><kbd>Esc</kbd> Pause</div>
                     </div>
                 </div>
@@ -453,7 +637,24 @@
         </aside>
     </div>
 
-    <script>
+    <style>
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+        }
+    </style>
+    <script type="module">
+        import {
+            fetchScores,
+            formatClock,
+            loadDisplayName,
+            renderBoardList,
+            submitScore,
+        } from '/board.js';
+
         // --- Play/pause coordination with the embedded game ---
         const overlay = document.getElementById('overlay');
         const playBtn = document.getElementById('play-btn');
@@ -462,7 +663,21 @@
         const drawerTitle = document.getElementById('drawer-title');
         const panelHowto = document.getElementById('panel-howto');
         const panelDownload = document.getElementById('panel-download');
+        const finishPlate = document.getElementById('finish-plate');
+        const finishTime = document.getElementById('finish-time');
+        const nameForm = document.getElementById('name-form');
+        const displayName = document.getElementById('display-name');
+        const plateError = document.getElementById('plate-error');
+        const boardWrap = document.getElementById('board-wrap');
+        const boardList = document.getElementById('board-list');
+        const boardFilter = document.getElementById('board-filter');
+        const playAgain = document.getElementById('play-again');
+        const boardAgain = document.getElementById('board-again');
         let hasStarted = false;
+        let pendingRun = null;
+        let boardRows = [];
+        let highlightId = null;
+        let browsingBoard = false;
 
         function closeDrawer() {
             if (!drawer) return;
@@ -481,13 +696,73 @@
         function showOverlay() {
             overlay.classList.remove('playing');
             overlay.classList.toggle('started', hasStarted);
-            playBtn.textContent = hasStarted ? 'Resume' : 'Play';
+            if (!overlay.classList.contains('finish')) {
+                playBtn.textContent = hasStarted ? 'Resume' : 'Play';
+                if (finishPlate) finishPlate.hidden = true;
+            }
             closeDrawer();
         }
 
         function hideOverlay() {
             overlay.classList.add('playing');
+            overlay.classList.remove('finish');
+            browsingBoard = false;
+            if (finishPlate) finishPlate.hidden = true;
             closeDrawer();
+        }
+
+        function paintBoard() {
+            renderBoardList(boardList, boardRows, {
+                filter: boardFilter?.value || 'run',
+                highlightId,
+            });
+        }
+
+        async function showBrowseBoard() {
+            browsingBoard = true;
+            pendingRun = null;
+            overlay.classList.remove('playing');
+            overlay.classList.add('finish');
+            if (finishPlate) finishPlate.hidden = false;
+            if (nameForm) nameForm.hidden = true;
+            if (boardWrap) boardWrap.hidden = false;
+            if (playAgain) playAgain.hidden = true;
+            if (boardAgain) boardAgain.hidden = false;
+            if (finishTime) finishTime.textContent = 'Global board';
+            try {
+                const data = await fetchScores();
+                boardRows = data.scores;
+                paintBoard();
+            } catch (err) {
+                if (plateError) plateError.textContent = err.message;
+            }
+        }
+
+        function showFinishPlate(run) {
+            pendingRun = run;
+            highlightId = null;
+            browsingBoard = false;
+            hasStarted = true;
+            overlay.classList.remove('playing');
+            overlay.classList.add('started', 'finish');
+            if (finishPlate) finishPlate.hidden = false;
+            if (nameForm) nameForm.hidden = false;
+            if (boardWrap) boardWrap.hidden = true;
+            if (playAgain) playAgain.hidden = false;
+            if (boardAgain) boardAgain.hidden = true;
+            if (finishTime) finishTime.textContent = formatClock(run?.total);
+            if (displayName) displayName.value = loadDisplayName();
+            if (plateError) plateError.textContent = '';
+            closeDrawer();
+            displayName?.focus();
+        }
+
+        function postToGame(type) {
+            try {
+                gameFrame.contentWindow.postMessage({ source: 'mm-shell', type }, location.origin);
+            } catch (err) {
+                console.warn('Could not message game frame:', err);
+            }
         }
 
         // The game (in the iframe) reports its state; mirror it in the overlay.
@@ -497,9 +772,48 @@
             if (data.type === 'playing') {
                 hasStarted = true;
                 hideOverlay();
+            } else if (data.type === 'run-complete') {
+                showFinishPlate(data.run || { total: data.total, levels: data.levels });
             } else if (data.type === 'paused' || data.type === 'ready') {
-                showOverlay();
+                if (!overlay.classList.contains('finish')) {
+                    showOverlay();
+                }
             }
+        });
+
+        nameForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!pendingRun) return;
+            if (plateError) plateError.textContent = '';
+            try {
+                const result = await submitScore({
+                    name: displayName?.value,
+                    total: pendingRun.total,
+                    levels: pendingRun.levels,
+                });
+                boardRows = result.scores || [];
+                highlightId = result.score?.id || null;
+                if (nameForm) nameForm.hidden = true;
+                if (boardWrap) boardWrap.hidden = false;
+                paintBoard();
+            } catch (err) {
+                if (plateError) plateError.textContent = err.message;
+            }
+        });
+
+        boardFilter?.addEventListener('change', paintBoard);
+        document.getElementById('open-board')?.addEventListener('click', showBrowseBoard);
+        boardAgain?.addEventListener('click', () => {
+            overlay.classList.remove('finish');
+            if (finishPlate) finishPlate.hidden = true;
+            browsingBoard = false;
+            showOverlay();
+        });
+        playAgain?.addEventListener('click', () => {
+            overlay.classList.remove('finish');
+            hideOverlay();
+            postToGame('play-again');
+            try { gameFrame.contentWindow.focus(); } catch (_) {}
         });
 
         playBtn.addEventListener('click', () => {

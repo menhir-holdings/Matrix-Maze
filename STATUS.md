@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-09-10  
+**As of:** 2026-09-14  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
 **Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
 **Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
@@ -16,10 +16,21 @@
 - Gold-path QA automation ([MT-65](https://linear.app/menhir-holdings/issue/MT-65))
 - Vercel deploy; GitHub releases proxy for desktop downloads
 - `/play` + `/dev` retired ([MT-102](https://linear.app/menhir-holdings/issue/MT-102))
+- Web shell restyle ([MT-208](https://linear.app/menhir-holdings/issue/MT-208))
 
 ## In review
 
-- [MT-208](https://linear.app/menhir-holdings/issue/MT-208) — Web shell restyle (cabinet/title overlay). WASM game, levels, and `game/` untouched. Kappa host → `matmaz.vercel.app`.
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD (no mid-grey on dither), axis-separated wall slide, arcade name-entry + global board, 16px favicon. Per-level local hiscores + `R` replay started. **Cut:** title-screen pick-a-level practice run.
+
+## Shell vs WASM
+
+| Lives in web chrome (`/`) | Lives in the game view (`/game/` WASM) |
+|---|---|
+| Title, Play/Resume, pause, how-to, download | Maze sim, raycast, movement, level timer |
+| Finish name plate + global/local board | L1–7 complete ASCII, `SPACE` next, `R` replay |
+| Esc overlay | Pointer-lock look, touch pad, in-run HUD |
+
+One hop after level 8: game posts `run-complete`, shell shows the plate. No extra lobby.
 
 ## Backlog
 
