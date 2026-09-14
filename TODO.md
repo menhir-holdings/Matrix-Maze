@@ -4,7 +4,7 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD, wall-slide, name-entry board
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD, Quake/Source wall-slide, name-entry board
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
@@ -32,7 +32,7 @@ Define ASCII raycast FPS floor and document WASM bundle size.
 
 ## Later (cut from MT-223)
 
-- Ghost replay of a recorded path
+- Ghost replay of a recorded input path (`R` today only regenerates the maze)
 - Durable KV/Blob token on the Vercel project if `GET /api/scores` reports `store: "memory"`
 
 ## Canceled
