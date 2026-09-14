@@ -20,21 +20,11 @@
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD (no mid-grey on dither), axis-separated wall slide, arcade name-entry + global board, 16px favicon. Per-level local hiscores + `R` replay started. **Cut:** title-screen pick-a-level practice run.
-
-## Shell vs WASM
-
-| Lives in web chrome (`/`) | Lives in the game view (`/game/` WASM) |
-|---|---|
-| Title, Play/Resume, pause, how-to, download | Maze sim, raycast, movement, level timer |
-| Finish name plate + global/local board | L1–7 complete ASCII, `SPACE` next, `R` replay |
-| Esc overlay | Pointer-lock look, touch pad, in-run HUD |
-
-One hop after level 8: game posts `run-complete`, shell shows the plate. No extra lobby.
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD contrast, Quake/Source wall-slide, display-name board after last level. Per-level hiscores + `R` replay started. Shell vs WASM cut documented on the issue.
 
 ## Backlog
 
-Mute toggle ([MT-48](https://linear.app/menhir-holdings/issue/MT-48) / [MT-67](https://linear.app/menhir-holdings/issue/MT-67)), lobby/fail/complete stingers ([MT-101](https://linear.app/menhir-holdings/issue/MT-101)), centered win ASCII ([MT-100](https://linear.app/menhir-holdings/issue/MT-100)), perf budget ([MT-69](https://linear.app/menhir-holdings/issue/MT-69)).
+Mute toggle ([MT-48](https://linear.app/menhir-holdings/issue/MT-48) / [MT-67](https://linear.app/menhir-holdings/issue/MT-67)), lobby/fail/complete stingers ([MT-101](https://linear.app/menhir-holdings/issue/MT-101)), centered win ASCII ([MT-100](https://linear.app/menhir-holdings/issue/MT-100)), perf budget ([MT-69](https://linear.app/menhir-holdings/issue/MT-69)). Ghost replay of a saved path is **not** in this pass.
 
 **Cut from v1:** creature chase ([MT-46](https://linear.app/menhir-holdings/issue/MT-46) canceled).
 

@@ -4,7 +4,7 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Contrast, wall slide, name-entry board, favicon
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD, wall-slide, name-entry board
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
@@ -30,9 +30,10 @@ First-gesture unlock done. Mute UI + persisted preference still open.
 
 Define ASCII raycast FPS floor and document WASM bundle size.
 
-## Started, not this PR
+## Later (cut from MT-223)
 
-- Title-screen pick-a-level practice (per-level replay is `R` after a win; local hiscores are recorded).
+- Ghost replay of a recorded path
+- Durable KV/Blob token on the Vercel project if `GET /api/scores` reports `store: "memory"`
 
 ## Canceled
 
