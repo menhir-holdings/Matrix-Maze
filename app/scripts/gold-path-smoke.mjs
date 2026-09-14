@@ -26,7 +26,18 @@ async function main() {
   const landing = await fetchText('/');
   assertIncludes(landing.text, 'id="play-btn"', 'landing play button');
   assertIncludes(landing.text, '/game/', 'embedded game iframe');
+  assertIncludes(landing.text, 'id="finish-plate"', 'landing finish plate');
+  assertIncludes(landing.text, 'favicon.svg', 'landing favicon');
+  if (landing.text.includes('#9c968b')) {
+    throw new Error('landing: mid-grey #9c968b must not remain');
+  }
   checks.push(`landing ${landing.url}`);
+
+  const scoresRes = await fetch(`${base}/api/scores`, { headers: { Accept: 'application/json' } });
+  if (!scoresRes.ok) throw new Error(`/api/scores → HTTP ${scoresRes.status}`);
+  const scoresJson = await scoresRes.json();
+  if (!Array.isArray(scoresJson.scores)) throw new Error('/api/scores: expected { scores: [] }');
+  checks.push(`scores store=${scoresJson.store || 'unknown'}`);
 
   const game = await fetchText('/game/');
   assertIncludes(game.text, 'Level 1', 'game level indicator');

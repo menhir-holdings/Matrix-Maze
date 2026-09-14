@@ -47,6 +47,10 @@ class TauriBackend {
         return this.invoke('next_level', { stateJson });
     }
 
+    replayLevel(stateJson) {
+        return this.invoke('replay_level', { stateJson });
+    }
+
     // Closes the desktop window. No-op fallback if the API is unavailable.
     async closeWindow() {
         try {
@@ -93,6 +97,10 @@ class WasmBackend {
 
     nextLevel(stateJson) {
         return this.wasm.next_level(stateJson);
+    }
+
+    replayLevel(stateJson) {
+        return this.wasm.replay_level(stateJson);
     }
 
     // No desktop window in the browser.

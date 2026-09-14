@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:wasm": "bash scripts/build-wasm.sh",
-    "build:web": "vite build --base=/game/ --outDir ../game --emptyOutDir",
+    "build:web": "vite build --outDir ../game --emptyOutDir",
     "preview": "vite preview",
     "tauri": "tauri",
     "music:sync": "node ./scripts/sync-music-from-kaiser.js --project matrix-maze",

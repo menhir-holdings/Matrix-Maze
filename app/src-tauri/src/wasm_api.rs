@@ -47,3 +47,9 @@ pub fn next_level(state_json: String) -> String {
     let game_state: GameState = serde_json::from_str(&state_json).unwrap();
     serde_json::to_string(&game_state.next_level()).unwrap()
 }
+
+#[wasm_bindgen]
+pub fn replay_level(state_json: String) -> String {
+    let game_state: GameState = serde_json::from_str(&state_json).unwrap();
+    serde_json::to_string(&game_state.replay_level()).unwrap()
+}

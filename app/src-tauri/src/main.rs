@@ -50,9 +50,16 @@ fn next_level(state_json: String) -> String {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[tauri::command]
+fn replay_level(state_json: String) -> String {
+    let game_state: GameState = serde_json::from_str(&state_json).unwrap();
+    serde_json::to_string(&game_state.replay_level()).unwrap()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![init_game, update_game, render_frame, restart_game, next_level])
+        .invoke_handler(tauri::generate_handler![init_game, update_game, render_frame, restart_game, next_level, replay_level])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -6,13 +6,16 @@
     <meta name="theme-color" content="#050505">
     <meta name="description" content="Matrix Maze — a 3D ASCII labyrinth. Play in the browser or download for macOS and Windows.">
     <title>Matrix Maze</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
+    <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Oswald:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #f4f1ea;
-            --muted: #9c968b;
+            --ink: #f7f4ec;
+            --muted: #ece7db;
             --line: rgba(244, 241, 234, 0.28);
             --cabinet: rgba(8, 8, 10, 0.55);
             --sheet: rgba(10, 10, 12, 0.88);
@@ -99,6 +102,10 @@
             display: none;
         }
 
+        #overlay.finish .hud {
+            display: none;
+        }
+
         .title {
             font-family: Oswald, ui-sans-serif, sans-serif;
             font-size: clamp(2.6rem, 9vw, 6.2rem);
@@ -116,6 +123,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--muted);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         #play-btn {
@@ -144,7 +152,10 @@
 
         #play-hint {
             font-size: 0.78rem;
+            font-weight: 400;
+            letter-spacing: 0.04em;
             color: var(--muted);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         .hud-links {
@@ -169,6 +180,7 @@
             color: var(--muted);
             text-decoration: none;
             cursor: pointer;
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         .hud-links button:hover,
@@ -370,6 +382,223 @@
             border: 0;
         }
 
+        #finish-plate {
+            width: min(420px, calc(100vw - 28px));
+            max-height: min(78vh, 640px);
+            overflow: auto;
+            padding: 20px 18px 16px;
+            background: var(--sheet);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
+            text-align: left;
+            color-scheme: dark;
+        }
+
+        #finish-plate[hidden] {
+            display: none;
+        }
+
+        .plate-kicker,
+        .board-toolbar h2 {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink);
+        }
+
+        .plate-time {
+            margin: 8px 0 16px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        #name-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        #display-name {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            font: inherit;
+            font-size: 1rem;
+            color: var(--ink);
+            caret-color: var(--ink);
+            color-scheme: dark;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        #display-name:focus {
+            outline: 2px solid var(--ink);
+        }
+
+        #name-form button,
+        #play-again,
+        #board-again {
+            width: 100%;
+            padding: 11px 16px;
+            font: inherit;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #111;
+            background: var(--ink);
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        #play-again,
+        #board-again {
+            margin-top: 12px;
+        }
+
+        .plate-error {
+            min-height: 1.2em;
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            color: #ffd4a8;
+        }
+
+        .board-toolbar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .hiscore-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .hiscore-filters button {
+            appearance: none;
+            font: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .hiscore-filters button.is-on {
+            color: #111;
+            background: var(--ink);
+            border-color: var(--ink);
+        }
+
+        .hiscore-name {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            color: var(--ink);
+            text-align: left;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        #profile-wrap {
+            text-align: left;
+        }
+
+        #profile-wrap[hidden] {
+            display: none;
+        }
+
+        .profile-back {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #profile-name {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .profile-stat {
+            margin: 6px 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        #profile-levels {
+            list-style: none;
+            margin: 12px 0 0;
+            padding: 0;
+        }
+
+        #profile-levels li {
+            display: grid;
+            grid-template-columns: 4rem 1fr auto;
+            gap: 8px;
+            padding: 7px 4px;
+            border-bottom: 1px solid var(--line);
+            color: var(--ink);
+            font-size: 0.92rem;
+        }
+
+        #board-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #board-list li {
+            display: grid;
+            grid-template-columns: 2rem 1fr auto;
+            gap: 8px;
+            padding: 7px 4px;
+            border-bottom: 1px solid var(--line);
+            color: var(--ink);
+            font-size: 0.92rem;
+        }
+
+        #board-list li.is-you {
+            background: rgba(247, 244, 236, 0.12);
+        }
+
+        #board-list .board-empty {
+            display: block;
+            padding: 12px 4px;
+            color: var(--muted);
+        }
+
+        #overlay:not(.finish) #finish-plate {
+            display: none;
+        }
+
         @media (max-width: 640px) {
             .title {
                 letter-spacing: 0.1em;
@@ -398,15 +627,53 @@
             <button id="play-btn" type="button">Play</button>
             <p id="play-hint">Press <kbd>Esc</kbd> anytime to pause</p>
             <nav class="hud-links" aria-label="Shell">
-                <button type="button" data-open="howto">How to play</button>
+                <button type="button" data-open="howto">Controls</button>
+                <button type="button" id="open-board">Hiscores</button>
                 <button type="button" data-open="download">Download</button>
-                <a href="https://github.com/ledoit/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/menhir-holdings/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
             </nav>
         </div>
 
+        <aside id="finish-plate" hidden>
+            <p class="plate-kicker">Run complete</p>
+            <p class="plate-time" id="finish-time">--:--.--</p>
+            <form id="name-form">
+                <label for="display-name">Your name</label>
+                <input id="display-name" name="display-name" maxlength="16" autocomplete="nickname" required>
+                <button type="submit">Submit time</button>
+                <p class="plate-error" id="plate-error"></p>
+            </form>
+            <div id="board-wrap" hidden>
+                <div class="board-toolbar">
+                    <h2>Hiscores</h2>
+                    <div class="hiscore-filters" id="board-filter" role="tablist" aria-label="Hiscore view">
+                        <button type="button" data-filter="run" class="is-on" aria-selected="true">Full run</button>
+                        <button type="button" data-filter="1" aria-selected="false">L1</button>
+                        <button type="button" data-filter="2" aria-selected="false">L2</button>
+                        <button type="button" data-filter="3" aria-selected="false">L3</button>
+                        <button type="button" data-filter="4" aria-selected="false">L4</button>
+                        <button type="button" data-filter="5" aria-selected="false">L5</button>
+                        <button type="button" data-filter="6" aria-selected="false">L6</button>
+                        <button type="button" data-filter="7" aria-selected="false">L7</button>
+                        <button type="button" data-filter="8" aria-selected="false">L8</button>
+                    </div>
+                </div>
+                <ol id="board-list"></ol>
+                <button type="button" id="play-again">Play again</button>
+            </div>
+            <div id="profile-wrap" hidden>
+                <button type="button" class="profile-back" id="profile-back">Hiscores</button>
+                <h2 id="profile-name">Player</h2>
+                <p class="profile-stat" id="profile-overall"></p>
+                <p class="profile-stat" id="profile-moving"></p>
+                <ol id="profile-levels"></ol>
+            </div>
+            <button type="button" id="board-again" hidden>Close</button>
+        </aside>
+
         <aside id="drawer" hidden>
             <div class="drawer-bar">
-                <h2 id="drawer-title">How to play</h2>
+                <h2 id="drawer-title">Controls</h2>
                 <button type="button" class="drawer-close" id="drawer-close">Close</button>
             </div>
 
@@ -421,10 +688,11 @@
                     </div>
                     <div>
                         <strong>Rotation</strong>
-                        <div><kbd>Q</kbd> Turn Left</div>
-                        <div><kbd>E</kbd> Turn Right</div>
+                        <div><kbd>Q</kbd> / <kbd>E</kbd> Turn</div>
+                        <div>Mouse / pointer — click maze, look</div>
                         <strong style="margin-top:10px;">Game</strong>
                         <div><kbd>Space</kbd> Next Level</div>
+                        <div><kbd>R</kbd> Replay level</div>
                         <div><kbd>Esc</kbd> Pause</div>
                     </div>
                 </div>
@@ -453,7 +721,28 @@
         </aside>
     </div>
 
-    <script>
+    <style>
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+        }
+    </style>
+    <script type="module">
+        import {
+            bindFilterChips,
+            currentFilter,
+            fetchScores,
+            formatClock,
+            loadDisplayName,
+            profileFromScores,
+            renderBoardList,
+            submitScore,
+        } from '/board.js';
+        import { ensurePlayer, formatMoving, loadPlayer } from '/account.js';
+
         // --- Play/pause coordination with the embedded game ---
         const overlay = document.getElementById('overlay');
         const playBtn = document.getElementById('play-btn');
@@ -462,7 +751,28 @@
         const drawerTitle = document.getElementById('drawer-title');
         const panelHowto = document.getElementById('panel-howto');
         const panelDownload = document.getElementById('panel-download');
+        const finishPlate = document.getElementById('finish-plate');
+        const finishTime = document.getElementById('finish-time');
+        const plateKicker = finishPlate?.querySelector('.plate-kicker');
+        const nameForm = document.getElementById('name-form');
+        const displayName = document.getElementById('display-name');
+        const plateError = document.getElementById('plate-error');
+        const boardWrap = document.getElementById('board-wrap');
+        const boardList = document.getElementById('board-list');
+        const boardFilter = document.getElementById('board-filter');
+        const playAgain = document.getElementById('play-again');
+        const boardAgain = document.getElementById('board-again');
+        const profileWrap = document.getElementById('profile-wrap');
+        const profileBack = document.getElementById('profile-back');
+        const profileName = document.getElementById('profile-name');
+        const profileOverall = document.getElementById('profile-overall');
+        const profileMoving = document.getElementById('profile-moving');
+        const profileLevels = document.getElementById('profile-levels');
         let hasStarted = false;
+        let pendingRun = null;
+        let boardRows = [];
+        let highlightId = null;
+        let browsingBoard = false;
 
         function closeDrawer() {
             if (!drawer) return;
@@ -474,20 +784,134 @@
             const howto = name === 'howto';
             panelHowto.hidden = !howto;
             panelDownload.hidden = howto;
-            drawerTitle.textContent = howto ? 'How to play' : 'Download';
+            drawerTitle.textContent = howto ? 'Controls' : 'Download';
             drawer.hidden = false;
         }
 
         function showOverlay() {
             overlay.classList.remove('playing');
             overlay.classList.toggle('started', hasStarted);
-            playBtn.textContent = hasStarted ? 'Resume' : 'Play';
+            if (!overlay.classList.contains('finish')) {
+                playBtn.textContent = hasStarted ? 'Resume' : 'Play';
+                if (finishPlate) finishPlate.hidden = true;
+            }
             closeDrawer();
         }
 
         function hideOverlay() {
             overlay.classList.add('playing');
+            overlay.classList.remove('finish');
+            browsingBoard = false;
+            if (finishPlate) finishPlate.hidden = true;
             closeDrawer();
+        }
+
+        function paintBoard() {
+            renderBoardList(boardList, boardRows, {
+                filter: currentFilter(boardFilter),
+                highlightId,
+                onName: showProfile,
+            });
+        }
+
+        function sanitizeLocal(name) {
+            return String(name || '').trim().toLowerCase();
+        }
+
+        function showProfile(row) {
+            const me = loadPlayer();
+            const movingSeconds =
+                (me && (me.id === row.playerId || sanitizeLocal(me.name) === sanitizeLocal(row.name)))
+                    ? me.movingSeconds
+                    : row.movingSeconds;
+            const profile = profileFromScores(boardRows, {
+                playerId: row.playerId,
+                name: row.name,
+                movingSeconds,
+            });
+            if (profileName) profileName.textContent = profile.name;
+            if (profileOverall) {
+                profileOverall.textContent = profile.bestRun
+                    ? `Full run ${formatClock(profile.bestRun.total)} · #${profile.overallRank} of ${profile.overallOf}`
+                    : 'No full-run time yet.';
+            }
+            if (profileMoving) {
+                profileMoving.textContent = `Moving time ${formatMoving(profile.movingSeconds)}`;
+            }
+            if (profileLevels) {
+                profileLevels.replaceChildren();
+                profile.levels.forEach((entry) => {
+                    const li = document.createElement('li');
+                    const lvl = document.createElement('span');
+                    lvl.textContent = `L${entry.level}`;
+                    const time = document.createElement('span');
+                    time.textContent = formatClock(entry.time);
+                    const rank = document.createElement('span');
+                    rank.textContent = entry.rank ? `#${entry.rank} of ${entry.of}` : '—';
+                    li.append(lvl, time, rank);
+                    profileLevels.appendChild(li);
+                });
+            }
+            if (nameForm) nameForm.hidden = true;
+            if (boardWrap) boardWrap.hidden = true;
+            if (profileWrap) profileWrap.hidden = false;
+        }
+
+        async function showBrowseBoard() {
+            browsingBoard = true;
+            pendingRun = null;
+            overlay.classList.remove('playing');
+            overlay.classList.add('finish');
+            if (finishPlate) finishPlate.hidden = false;
+            if (plateKicker) plateKicker.hidden = true;
+            if (finishTime) finishTime.hidden = true;
+            if (nameForm) nameForm.hidden = true;
+            if (boardWrap) boardWrap.hidden = false;
+            if (profileWrap) profileWrap.hidden = true;
+            if (playAgain) playAgain.hidden = true;
+            if (boardAgain) boardAgain.hidden = false;
+            try {
+                const data = await fetchScores();
+                boardRows = data.scores;
+                paintBoard();
+            } catch (err) {
+                if (plateError) plateError.textContent = err.message;
+            }
+        }
+
+        function showFinishPlate(run) {
+            pendingRun = run;
+            highlightId = null;
+            browsingBoard = false;
+            hasStarted = true;
+            overlay.classList.remove('playing');
+            overlay.classList.add('started', 'finish');
+            if (finishPlate) finishPlate.hidden = false;
+            if (plateKicker) plateKicker.hidden = false;
+            if (finishTime) finishTime.hidden = false;
+            if (nameForm) nameForm.hidden = false;
+            if (boardWrap) boardWrap.hidden = true;
+            if (profileWrap) profileWrap.hidden = true;
+            if (playAgain) playAgain.hidden = false;
+            if (boardAgain) boardAgain.hidden = true;
+            if (finishTime) finishTime.textContent = formatClock(run?.total);
+            const saved = loadPlayer()?.name || loadDisplayName();
+            if (displayName) displayName.value = saved;
+            if (plateError) plateError.textContent = '';
+            closeDrawer();
+            postToGame('chrome');
+            window.setTimeout(() => {
+                displayName?.focus();
+                displayName?.select();
+            }, 30);
+        }
+
+        function postToGame(type) {
+            try {
+                gameFrame.contentWindow.postMessage({ source: 'mm-shell', type }, location.origin);
+            } catch (err) {
+                console.warn('Could not message game frame:', err);
+            }
         }
 
         // The game (in the iframe) reports its state; mirror it in the overlay.
@@ -497,9 +921,59 @@
             if (data.type === 'playing') {
                 hasStarted = true;
                 hideOverlay();
+            } else if (data.type === 'run-complete') {
+                showFinishPlate(data.run || { total: data.total, levels: data.levels });
             } else if (data.type === 'paused' || data.type === 'ready') {
-                showOverlay();
+                if (!overlay.classList.contains('finish')) {
+                    showOverlay();
+                } else if (nameForm && !nameForm.hidden) {
+                    displayName?.focus();
+                    displayName?.select();
+                }
             }
+        });
+
+        nameForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!pendingRun) return;
+            if (plateError) plateError.textContent = '';
+            try {
+                const player = ensurePlayer(displayName?.value);
+                const result = await submitScore({
+                    name: player.name,
+                    playerId: player.id,
+                    total: pendingRun.total,
+                    levels: pendingRun.levels,
+                    movingSeconds: player.movingSeconds,
+                });
+                boardRows = result.scores || [];
+                highlightId = result.score?.id || null;
+                if (nameForm) nameForm.hidden = true;
+                if (boardWrap) boardWrap.hidden = false;
+                if (profileWrap) profileWrap.hidden = true;
+                paintBoard();
+            } catch (err) {
+                if (plateError) plateError.textContent = err.message;
+            }
+        });
+
+        bindFilterChips(boardFilter, () => paintBoard());
+        document.getElementById('open-board')?.addEventListener('click', showBrowseBoard);
+        profileBack?.addEventListener('click', () => {
+            if (profileWrap) profileWrap.hidden = true;
+            if (boardWrap) boardWrap.hidden = false;
+        });
+        boardAgain?.addEventListener('click', () => {
+            overlay.classList.remove('finish');
+            if (finishPlate) finishPlate.hidden = true;
+            browsingBoard = false;
+            showOverlay();
+        });
+        playAgain?.addEventListener('click', () => {
+            overlay.classList.remove('finish');
+            hideOverlay();
+            postToGame('play-again');
+            try { gameFrame.contentWindow.focus(); } catch (_) {}
         });
 
         playBtn.addEventListener('click', () => {
