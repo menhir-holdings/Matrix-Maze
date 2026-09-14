@@ -4,7 +4,7 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD, Quake/Source wall-slide, name-entry board
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Cardless overlay + cream type, Quake/Source wall-slide, name-entry board
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 

@@ -14,11 +14,10 @@
     <style>
         :root {
             --ink: #f7f4ec;
-            --muted: #e6e0d2;
-            --line: rgba(247, 244, 236, 0.48);
-            --cabinet: rgba(8, 8, 10, 0.82);
-            --sheet: rgba(6, 6, 8, 0.94);
-            --read-shadow: 0 1px 2px #000, 0 0 18px rgba(0, 0, 0, 0.92);
+            --muted: #ece7db;
+            --line: rgba(244, 241, 234, 0.28);
+            --cabinet: rgba(8, 8, 10, 0.55);
+            --sheet: rgba(10, 10, 12, 0.88);
         }
 
         * {
@@ -60,12 +59,12 @@
             align-items: center;
             justify-content: center;
             padding: 28px 20px 32px;
-            background: rgba(0, 0, 0, 0.78);
+            background: radial-gradient(ellipse at 50% 42%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.7) 72%);
             transition: background 0.25s ease;
         }
 
         #overlay.started {
-            background: rgba(0, 0, 0, 0.82);
+            background: rgba(0, 0, 0, 0.64);
         }
 
         #overlay.playing {
@@ -79,12 +78,6 @@
             text-align: center;
             gap: 18px;
             max-width: 36rem;
-            padding: 22px 26px 20px;
-            background: var(--sheet);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
-            backdrop-filter: blur(16px);
         }
 
         .pause-mark {
@@ -120,7 +113,7 @@
             line-height: 0.95;
             text-transform: uppercase;
             color: var(--ink);
-            text-shadow: var(--read-shadow);
+            text-shadow: 0 2px 28px rgba(0, 0, 0, 0.85);
         }
 
         .tag {
@@ -129,7 +122,7 @@
             letter-spacing: 0.08em;
             text-transform: uppercase;
             color: var(--muted);
-            text-shadow: var(--read-shadow);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         #play-btn {
@@ -158,8 +151,10 @@
 
         #play-hint {
             font-size: 0.78rem;
+            font-weight: 400;
+            letter-spacing: 0.04em;
             color: var(--muted);
-            text-shadow: var(--read-shadow);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         .hud-links {
@@ -181,10 +176,10 @@
             font-weight: 500;
             letter-spacing: 0.06em;
             text-transform: uppercase;
-            color: var(--ink);
+            color: var(--muted);
             text-decoration: none;
             cursor: pointer;
-            text-shadow: var(--read-shadow);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
         }
 
         .hud-links button:hover,
@@ -410,7 +405,6 @@
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: var(--ink);
-            text-shadow: var(--read-shadow);
         }
 
         .plate-time {
@@ -418,7 +412,6 @@
             font-size: 1.35rem;
             font-weight: 600;
             color: var(--ink);
-            text-shadow: var(--read-shadow);
         }
 
         #name-form label {

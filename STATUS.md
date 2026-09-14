@@ -20,7 +20,7 @@
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Readable HUD (no mid-grey on dither), Quake/Source **move-slide** (try intended move; on hit, project leftover onto the wall tangent — circle vs cell grid), arcade name-entry + global board. Per-level local hiscores + `R` replay started.
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Cardless title overlay (MT-208 look), cream/white type hierarchy instead of mid-grey, Quake/Source **move-slide**, arcade name-entry + global board. Per-level local hiscores + `R` replay started.
 
 ## Shell vs WASM
 
