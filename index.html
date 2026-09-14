@@ -665,6 +665,7 @@
         const panelDownload = document.getElementById('panel-download');
         const finishPlate = document.getElementById('finish-plate');
         const finishTime = document.getElementById('finish-time');
+        const plateKicker = finishPlate?.querySelector('.plate-kicker');
         const nameForm = document.getElementById('name-form');
         const displayName = document.getElementById('display-name');
         const plateError = document.getElementById('plate-error');
@@ -724,11 +725,12 @@
             overlay.classList.remove('playing');
             overlay.classList.add('finish');
             if (finishPlate) finishPlate.hidden = false;
+            if (plateKicker) plateKicker.hidden = true;
+            if (finishTime) finishTime.hidden = true;
             if (nameForm) nameForm.hidden = true;
             if (boardWrap) boardWrap.hidden = false;
             if (playAgain) playAgain.hidden = true;
             if (boardAgain) boardAgain.hidden = false;
-            if (finishTime) finishTime.textContent = 'Global board';
             try {
                 const data = await fetchScores();
                 boardRows = data.scores;
@@ -746,6 +748,8 @@
             overlay.classList.remove('playing');
             overlay.classList.add('started', 'finish');
             if (finishPlate) finishPlate.hidden = false;
+            if (plateKicker) plateKicker.hidden = false;
+            if (finishTime) finishTime.hidden = false;
             if (nameForm) nameForm.hidden = false;
             if (boardWrap) boardWrap.hidden = true;
             if (playAgain) playAgain.hidden = false;
