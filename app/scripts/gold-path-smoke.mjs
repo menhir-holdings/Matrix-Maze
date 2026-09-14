@@ -33,6 +33,12 @@ async function main() {
   }
   checks.push(`landing ${landing.url}`);
 
+  const scoresRes = await fetch(`${base}/api/scores`, { headers: { Accept: 'application/json' } });
+  if (!scoresRes.ok) throw new Error(`/api/scores → HTTP ${scoresRes.status}`);
+  const scoresJson = await scoresRes.json();
+  if (!Array.isArray(scoresJson.scores)) throw new Error('/api/scores: expected { scores: [] }');
+  checks.push(`scores store=${scoresJson.store || 'unknown'}`);
+
   const game = await fetchText('/game/');
   assertIncludes(game.text, 'Level 1', 'game level indicator');
   assertIncludes(game.text, 'WASD', 'game controls hint');

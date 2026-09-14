@@ -33,7 +33,7 @@ Run once per browser after a hard refresh (empty cache). Production URL unless t
 | Levels 2–8 complete without reload | ☐ | ☐ | ☐ |
 | After level 8 — name plate + board + play again | ☐ | ☐ | ☐ |
 
-**Controls:** WASD move, Q/E turn, SPACE (or tap viewport on Windows) after win.
+**Controls:** WASD move, Q/E turn, SPACE continue (levels 1–7), **R** replay this level, name plate after level 8.
 
 ## Notes
 
