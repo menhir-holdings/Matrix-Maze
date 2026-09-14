@@ -20,14 +20,14 @@
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Cardless title overlay (MT-208 look), cream/white type hierarchy instead of mid-grey, Quake/Source **move-slide**, arcade name-entry + global board. Per-level local hiscores + `R` replay started.
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Cardless overlay, cream type, Quake/Source move-slide, hiscores + local player accounts (click a name for profile, moving playtime). Seeded **philly** 2:39.41.
 
 ## Shell vs WASM
 
 | Lives in web chrome (`/`) | Lives in the game view (`/game/` WASM) |
 |---|---|
-| Title, Play/Resume, pause, how-to, download | Maze sim, raycast, movement, level timer |
-| Finish name plate + global/local board | L1–7 complete ASCII, `SPACE` next, `R` replay |
+| Title, Play/Resume, pause, controls, download | Maze sim, raycast, movement, level timer |
+| Finish name plate + hiscores + player profile | L1–7 complete ASCII, `SPACE` next, `R` replay |
 | Esc overlay | Pointer-lock look, touch pad, in-run HUD |
 
 One hop after level 8: game posts `run-complete`, shell shows the plate. No extra lobby.

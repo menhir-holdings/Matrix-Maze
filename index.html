@@ -391,6 +391,7 @@
             border-radius: 16px;
             box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55);
             text-align: left;
+            color-scheme: dark;
         }
 
         #finish-plate[hidden] {
@@ -430,6 +431,8 @@
             font: inherit;
             font-size: 1rem;
             color: var(--ink);
+            caret-color: var(--ink);
+            color-scheme: dark;
             background: rgba(0, 0, 0, 0.45);
             border: 1px solid var(--line);
             border-radius: 10px;
@@ -469,19 +472,100 @@
 
         .board-toolbar {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
             margin-bottom: 10px;
         }
 
-        #board-filter {
+        .hiscore-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .hiscore-filters button {
+            appearance: none;
+            font: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            background: none;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .hiscore-filters button.is-on {
+            color: #111;
+            background: var(--ink);
+            border-color: var(--ink);
+        }
+
+        .hiscore-name {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
             font: inherit;
             color: var(--ink);
-            background: rgba(0, 0, 0, 0.45);
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            padding: 4px 8px;
+            text-align: left;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        #profile-wrap {
+            text-align: left;
+        }
+
+        #profile-wrap[hidden] {
+            display: none;
+        }
+
+        .profile-back {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #profile-name {
+            font-family: Oswald, ui-sans-serif, sans-serif;
+            font-size: 1.4rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .profile-stat {
+            margin: 6px 0;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        #profile-levels {
+            list-style: none;
+            margin: 12px 0 0;
+            padding: 0;
+        }
+
+        #profile-levels li {
+            display: grid;
+            grid-template-columns: 4rem 1fr auto;
+            gap: 8px;
+            padding: 7px 4px;
+            border-bottom: 1px solid var(--line);
+            color: var(--ink);
+            font-size: 0.92rem;
         }
 
         #board-list {
@@ -542,8 +626,8 @@
             <button id="play-btn" type="button">Play</button>
             <p id="play-hint">Press <kbd>Esc</kbd> anytime to pause</p>
             <nav class="hud-links" aria-label="Shell">
-                <button type="button" data-open="howto">How to play</button>
-                <button type="button" id="open-board">Board</button>
+                <button type="button" data-open="howto">Controls</button>
+                <button type="button" id="open-board">Hiscores</button>
                 <button type="button" data-open="download">Download</button>
                 <a href="https://github.com/menhir-holdings/Matrix-Maze" target="_blank" rel="noopener">GitHub</a>
             </nav>
@@ -560,29 +644,35 @@
             </form>
             <div id="board-wrap" hidden>
                 <div class="board-toolbar">
-                    <h2>Board</h2>
-                    <label class="visually-hidden" for="board-filter">Sort</label>
-                    <select id="board-filter">
-                        <option value="run">Full run</option>
-                        <option value="1">Level 1</option>
-                        <option value="2">Level 2</option>
-                        <option value="3">Level 3</option>
-                        <option value="4">Level 4</option>
-                        <option value="5">Level 5</option>
-                        <option value="6">Level 6</option>
-                        <option value="7">Level 7</option>
-                        <option value="8">Level 8</option>
-                    </select>
+                    <h2>Hiscores</h2>
+                    <div class="hiscore-filters" id="board-filter" role="tablist" aria-label="Hiscore view">
+                        <button type="button" data-filter="run" class="is-on" aria-selected="true">Full run</button>
+                        <button type="button" data-filter="1" aria-selected="false">L1</button>
+                        <button type="button" data-filter="2" aria-selected="false">L2</button>
+                        <button type="button" data-filter="3" aria-selected="false">L3</button>
+                        <button type="button" data-filter="4" aria-selected="false">L4</button>
+                        <button type="button" data-filter="5" aria-selected="false">L5</button>
+                        <button type="button" data-filter="6" aria-selected="false">L6</button>
+                        <button type="button" data-filter="7" aria-selected="false">L7</button>
+                        <button type="button" data-filter="8" aria-selected="false">L8</button>
+                    </div>
                 </div>
                 <ol id="board-list"></ol>
                 <button type="button" id="play-again">Play again</button>
+            </div>
+            <div id="profile-wrap" hidden>
+                <button type="button" class="profile-back" id="profile-back">Hiscores</button>
+                <h2 id="profile-name">Player</h2>
+                <p class="profile-stat" id="profile-overall"></p>
+                <p class="profile-stat" id="profile-moving"></p>
+                <ol id="profile-levels"></ol>
             </div>
             <button type="button" id="board-again" hidden>Close</button>
         </aside>
 
         <aside id="drawer" hidden>
             <div class="drawer-bar">
-                <h2 id="drawer-title">How to play</h2>
+                <h2 id="drawer-title">Controls</h2>
                 <button type="button" class="drawer-close" id="drawer-close">Close</button>
             </div>
 
@@ -597,8 +687,8 @@
                     </div>
                     <div>
                         <strong>Rotation</strong>
-                        <div><kbd>Q</kbd> Turn Left</div>
-                        <div><kbd>E</kbd> Turn Right</div>
+                        <div><kbd>Q</kbd> / <kbd>E</kbd> Turn</div>
+                        <div>Mouse / pointer — click maze, look</div>
                         <strong style="margin-top:10px;">Game</strong>
                         <div><kbd>Space</kbd> Next Level</div>
                         <div><kbd>R</kbd> Replay level</div>
@@ -641,12 +731,16 @@
     </style>
     <script type="module">
         import {
+            bindFilterChips,
+            currentFilter,
             fetchScores,
             formatClock,
             loadDisplayName,
+            profileFromScores,
             renderBoardList,
             submitScore,
         } from '/board.js';
+        import { ensurePlayer, formatMoving, loadPlayer } from '/account.js';
 
         // --- Play/pause coordination with the embedded game ---
         const overlay = document.getElementById('overlay');
@@ -667,6 +761,12 @@
         const boardFilter = document.getElementById('board-filter');
         const playAgain = document.getElementById('play-again');
         const boardAgain = document.getElementById('board-again');
+        const profileWrap = document.getElementById('profile-wrap');
+        const profileBack = document.getElementById('profile-back');
+        const profileName = document.getElementById('profile-name');
+        const profileOverall = document.getElementById('profile-overall');
+        const profileMoving = document.getElementById('profile-moving');
+        const profileLevels = document.getElementById('profile-levels');
         let hasStarted = false;
         let pendingRun = null;
         let boardRows = [];
@@ -683,7 +783,7 @@
             const howto = name === 'howto';
             panelHowto.hidden = !howto;
             panelDownload.hidden = howto;
-            drawerTitle.textContent = howto ? 'How to play' : 'Download';
+            drawerTitle.textContent = howto ? 'Controls' : 'Download';
             drawer.hidden = false;
         }
 
@@ -707,9 +807,53 @@
 
         function paintBoard() {
             renderBoardList(boardList, boardRows, {
-                filter: boardFilter?.value || 'run',
+                filter: currentFilter(boardFilter),
                 highlightId,
+                onName: showProfile,
             });
+        }
+
+        function sanitizeLocal(name) {
+            return String(name || '').trim().toLowerCase();
+        }
+
+        function showProfile(row) {
+            const me = loadPlayer();
+            const movingSeconds =
+                (me && (me.id === row.playerId || sanitizeLocal(me.name) === sanitizeLocal(row.name)))
+                    ? me.movingSeconds
+                    : row.movingSeconds;
+            const profile = profileFromScores(boardRows, {
+                playerId: row.playerId,
+                name: row.name,
+                movingSeconds,
+            });
+            if (profileName) profileName.textContent = profile.name;
+            if (profileOverall) {
+                profileOverall.textContent = profile.bestRun
+                    ? `Full run ${formatClock(profile.bestRun.total)} · #${profile.overallRank} of ${profile.overallOf}`
+                    : 'No full-run time yet.';
+            }
+            if (profileMoving) {
+                profileMoving.textContent = `Moving time ${formatMoving(profile.movingSeconds)}`;
+            }
+            if (profileLevels) {
+                profileLevels.replaceChildren();
+                profile.levels.forEach((entry) => {
+                    const li = document.createElement('li');
+                    const lvl = document.createElement('span');
+                    lvl.textContent = `L${entry.level}`;
+                    const time = document.createElement('span');
+                    time.textContent = formatClock(entry.time);
+                    const rank = document.createElement('span');
+                    rank.textContent = entry.rank ? `#${entry.rank} of ${entry.of}` : '—';
+                    li.append(lvl, time, rank);
+                    profileLevels.appendChild(li);
+                });
+            }
+            if (nameForm) nameForm.hidden = true;
+            if (boardWrap) boardWrap.hidden = true;
+            if (profileWrap) profileWrap.hidden = false;
         }
 
         async function showBrowseBoard() {
@@ -722,6 +866,7 @@
             if (finishTime) finishTime.hidden = true;
             if (nameForm) nameForm.hidden = true;
             if (boardWrap) boardWrap.hidden = false;
+            if (profileWrap) profileWrap.hidden = true;
             if (playAgain) playAgain.hidden = true;
             if (boardAgain) boardAgain.hidden = false;
             try {
@@ -745,13 +890,19 @@
             if (finishTime) finishTime.hidden = false;
             if (nameForm) nameForm.hidden = false;
             if (boardWrap) boardWrap.hidden = true;
+            if (profileWrap) profileWrap.hidden = true;
             if (playAgain) playAgain.hidden = false;
             if (boardAgain) boardAgain.hidden = true;
             if (finishTime) finishTime.textContent = formatClock(run?.total);
-            if (displayName) displayName.value = loadDisplayName();
+            const saved = loadPlayer()?.name || loadDisplayName();
+            if (displayName) displayName.value = saved;
             if (plateError) plateError.textContent = '';
             closeDrawer();
-            displayName?.focus();
+            postToGame('chrome');
+            window.setTimeout(() => {
+                displayName?.focus();
+                displayName?.select();
+            }, 30);
         }
 
         function postToGame(type) {
@@ -774,6 +925,9 @@
             } else if (data.type === 'paused' || data.type === 'ready') {
                 if (!overlay.classList.contains('finish')) {
                     showOverlay();
+                } else if (nameForm && !nameForm.hidden) {
+                    displayName?.focus();
+                    displayName?.select();
                 }
             }
         });
@@ -783,23 +937,31 @@
             if (!pendingRun) return;
             if (plateError) plateError.textContent = '';
             try {
+                const player = ensurePlayer(displayName?.value);
                 const result = await submitScore({
-                    name: displayName?.value,
+                    name: player.name,
+                    playerId: player.id,
                     total: pendingRun.total,
                     levels: pendingRun.levels,
+                    movingSeconds: player.movingSeconds,
                 });
                 boardRows = result.scores || [];
                 highlightId = result.score?.id || null;
                 if (nameForm) nameForm.hidden = true;
                 if (boardWrap) boardWrap.hidden = false;
+                if (profileWrap) profileWrap.hidden = true;
                 paintBoard();
             } catch (err) {
                 if (plateError) plateError.textContent = err.message;
             }
         });
 
-        boardFilter?.addEventListener('change', paintBoard);
+        bindFilterChips(boardFilter, () => paintBoard());
         document.getElementById('open-board')?.addEventListener('click', showBrowseBoard);
+        profileBack?.addEventListener('click', () => {
+            if (profileWrap) profileWrap.hidden = true;
+            if (boardWrap) boardWrap.hidden = false;
+        });
         boardAgain?.addEventListener('click', () => {
             overlay.classList.remove('finish');
             if (finishPlate) finishPlate.hidden = true;

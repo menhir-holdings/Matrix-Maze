@@ -1,15 +1,28 @@
 # Matrix Maze scores
 
-Global board for finished 8-level runs. Display name only — no Clerk, no accounts.
+Global hiscores for finished 8-level runs, plus a local-first player row.
+
+## Row seam
+
+Swap the store later without changing the UI:
+
+```
+ScoreRow { id, playerId?, name, total, levels[8], at, movingSeconds? }
+Player   { id, name, createdAt, movingSeconds }
+```
+
+`playerId` is the account key. Names are display-only (1–16 chars). Clicking a name on the hiscore list opens a profile: best full-run + rank, per-level time + rank, and **moving** playtime (WASD / QE / mouse look only — pause, idle, level-complete, and game-complete do not count).
 
 ## API
 
 | | |
 |---|---|
-| `GET /api/scores` | Top 50 full-run times, fastest first. `{ scores, store }` |
-| `POST /api/scores` | `{ name, total, levels[8] }` → `{ ok, score, scores, store }` |
+| `GET /api/scores` | Top 50 full-run times, fastest first. `{ scores, store }` always merged with `scores-seed.json` |
+| `POST /api/scores` | `{ name, total, levels[8], playerId?, movingSeconds? }` → `{ ok, score, scores, store }` |
 
-Name is 1–16 characters, persisted in the browser as `localStorage.matrix_maze_display_name`.
+Local player lives in `localStorage.mm-player`. Display name also in `matrix_maze_display_name`.
+
+Seeded hiscore: **philly** 2:39.41 (`scores-seed.json`). Remove or edit that file when live times replace it.
 
 ## Store (Vercel-safe)
 
@@ -19,10 +32,10 @@ Name is 1–16 characters, persisted in the browser as `localStorage.matrix_maze
 2. **Vercel Blob** — `BLOB_READ_WRITE_TOKEN`, object `matrix-maze-scores.json`
 3. **Memory** — last-resort for a warm lambda. Cold starts empty. Response includes `store: "memory"` so you can tell.
 
-Set KV or Blob on the `matrix-maze` project in team `menhir-holdings` for a durable production board. Preview deploys share the same env if the project already has the token.
+Point `loadStore` / `saveStore` at Postgres when it exists; keep the row shape.
 
 `app/src/backend.js` is the Tauri/WASM game host, not a score store.
 
-## Board filters
+## Hiscore filters
 
-The finish plate can sort by **full run** or a single **level split** (`levels[n]`). That is per-level hiscores, not a ghost replay.
+Chip buttons sort by **full run** or a single **level split** (`levels[n]`). That is per-level hiscores, not a ghost replay.

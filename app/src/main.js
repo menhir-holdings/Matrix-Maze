@@ -2,11 +2,15 @@ import { createBackend } from './backend.js';
 import { LEVEL_COLORS } from './constants.js';
 import { AdaptiveMusic } from './music.js';
 import { bindArcadePlate } from './arcade-plate.js';
+import { addMovingSeconds, ensurePlayer, formatMoving, loadPlayer } from '../../account.js';
 import {
+    bindFilterChips,
+    currentFilter,
     fetchScores,
     finishPayloadFromState,
     formatClock,
     loadDisplayName,
+    profileFromScores,
     recordLevel,
     renderBoardList,
     submitScore,
@@ -63,6 +67,7 @@ let advancingLevel = false;
 let finishNotified = false;
 let recordedWinKey = null;
 let arcade = null;
+let movingFlush = 0;
 
 function winKey(stateObj) {
     if (!stateObj?.has_won) return null;
@@ -112,12 +117,61 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
     const list = root.querySelector('#board-list');
     const filter = root.querySelector('#board-filter');
     const again = root.querySelector('#play-again');
+    const profileWrap = root.querySelector('#profile-wrap');
+    const profileBack = root.querySelector('#profile-back');
+    const profileName = root.querySelector('#profile-name');
+    const profileOverall = root.querySelector('#profile-overall');
+    const profileMoving = root.querySelector('#profile-moving');
+    const profileLevels = root.querySelector('#profile-levels');
     let pending = null;
     let rows = [];
     let highlightId = null;
 
     function paint() {
-        renderBoardList(list, rows, { filter: filter?.value || 'run', highlightId });
+        renderBoardList(list, rows, {
+            filter: currentFilter(filter),
+            highlightId,
+            onName: showProfile,
+        });
+    }
+
+    function showProfile(row) {
+        const me = loadPlayer();
+        const movingSeconds =
+            me && (me.id === row.playerId || sanitizeStandalone(me.name) === sanitizeStandalone(row.name))
+                ? me.movingSeconds
+                : row.movingSeconds;
+        const profile = profileFromScores(rows, {
+            playerId: row.playerId,
+            name: row.name,
+            movingSeconds,
+        });
+        if (profileName) profileName.textContent = profile.name;
+        if (profileOverall) {
+            profileOverall.textContent = profile.bestRun
+                ? `Full run ${formatClock(profile.bestRun.total)} · #${profile.overallRank} of ${profile.overallOf}`
+                : 'No full-run time yet.';
+        }
+        if (profileMoving) {
+            profileMoving.textContent = `Moving time ${formatMoving(profile.movingSeconds)}`;
+        }
+        if (profileLevels) {
+            profileLevels.replaceChildren();
+            profile.levels.forEach((entry) => {
+                const li = document.createElement('li');
+                const lvl = document.createElement('span');
+                lvl.textContent = `L${entry.level}`;
+                const time = document.createElement('span');
+                time.textContent = formatClock(entry.time);
+                const rank = document.createElement('span');
+                rank.textContent = entry.rank ? `#${entry.rank} of ${entry.of}` : '—';
+                li.append(lvl, time, rank);
+                profileLevels.appendChild(li);
+            });
+        }
+        if (form) form.hidden = true;
+        if (wrap) wrap.hidden = true;
+        if (profileWrap) profileWrap.hidden = false;
     }
 
     form?.addEventListener('submit', async (e) => {
@@ -125,21 +179,29 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
         if (!pending) return;
         if (errEl) errEl.textContent = '';
         try {
+            const player = ensurePlayer(nameInput?.value);
             const result = await submitScore({
-                name: nameInput?.value,
+                name: player.name,
+                playerId: player.id,
                 total: pending.total,
                 levels: pending.levels,
+                movingSeconds: player.movingSeconds,
             });
             rows = result.scores || [];
             highlightId = result.score?.id || null;
             if (form) form.hidden = true;
             if (wrap) wrap.hidden = false;
+            if (profileWrap) profileWrap.hidden = true;
             paint();
         } catch (err) {
             if (errEl) errEl.textContent = err.message;
         }
     });
-    filter?.addEventListener('change', paint);
+    bindFilterChips(filter, () => paint());
+    profileBack?.addEventListener('click', () => {
+        if (profileWrap) profileWrap.hidden = true;
+        if (wrap) wrap.hidden = false;
+    });
     again?.addEventListener('click', () => onPlayAgain?.());
 
     return {
@@ -149,8 +211,9 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
             root.hidden = false;
             if (form) form.hidden = false;
             if (wrap) wrap.hidden = true;
+            if (profileWrap) profileWrap.hidden = true;
             if (timeEl) timeEl.textContent = formatClock(payload?.total);
-            if (nameInput) nameInput.value = loadBoardName();
+            if (nameInput) nameInput.value = loadPlayer()?.name || loadBoardName();
             if (errEl) errEl.textContent = '';
             try {
                 const data = await fetchScores();
@@ -158,13 +221,20 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
             } catch {
                 rows = [];
             }
-            nameInput?.focus();
+            window.setTimeout(() => {
+                nameInput?.focus();
+                nameInput?.select();
+            }, 30);
         },
         hide() {
             root.hidden = true;
         },
         render: paint,
     };
+}
+
+function sanitizeStandalone(name) {
+    return String(name || '').trim().toLowerCase();
 }
 
 async function replayIfWon() {
@@ -234,8 +304,18 @@ async function advanceIfWon() {
     }
 }
 
+function finishPlateOpen() {
+    const plate = document.getElementById('finish-plate');
+    return Boolean(plate && !plate.hidden);
+}
+
+function shouldHoldViewportFocus() {
+    return !paused && !finishPlateOpen();
+}
+
 function syncWinScreenFlag(stateObj) {
     hasWonScreen = Boolean(stateObj?.has_won);
+    if (!shouldHoldViewportFocus()) return;
     if (hasWonScreen && viewport && document.activeElement !== viewport) {
         viewport.focus();
     }
@@ -290,10 +370,10 @@ async function init() {
     
     // Ensure viewport regains focus if it loses it (especially important on win screen)
     viewport.addEventListener('blur', () => {
-        // Only refocus if we're on the win screen and no other element has focus
+        if (!shouldHoldViewportFocus()) return;
         setTimeout(() => {
+            if (!shouldHoldViewportFocus()) return;
             if (viewport && document.activeElement === document.body) {
-                // Check if game is won - if so, refocus viewport for spacebar input
                 try {
                     if (gameState) {
                         const gameStateObj = JSON.parse(gameState);
@@ -411,6 +491,10 @@ function handleShellMessage(e) {
     if (!data || data.source !== 'mm-shell') return;
     if (data.type === 'play') {
         startPlaying();
+    } else if (data.type === 'chrome') {
+        if (!paused) pauseToShell();
+        if (document.pointerLockElement) document.exitPointerLock();
+        if (viewport) viewport.blur();
     } else if (data.type === 'restart' || data.type === 'play-again') {
         playAgainFromPlate().then(() => {
             if (paused) startPlaying();
@@ -438,6 +522,7 @@ async function startPlaying() {
     pausedAt = null;
     paused = false;
     lastFrameTime = performance.now() / 1000.0; // avoid a large delta on the first live frame
+    ensurePlayer(loadPlayer()?.name || loadDisplayName() || '');
     await music.resume();
     if (viewport) viewport.focus();
     postToShell('playing');
@@ -448,6 +533,10 @@ async function pauseToShell() {
     if (paused) return;
     paused = true;
     pausedAt = performance.now() / 1000.0;
+    if (movingFlush > 0) {
+        addMovingSeconds(movingFlush);
+        movingFlush = 0;
+    }
     await music.suspend();
     if (document.pointerLockElement) {
         document.exitPointerLock();
@@ -498,7 +587,7 @@ function resizeViewport() {
     // Account for border (2px on each side = 4px) and padding (10px on each side = 20px)
     const borderPadding = 4 + 20; // 24px total
     const availableWidth = container.clientWidth - borderPadding - 40; // Extra 40 for margins
-    const availableHeight = container.clientHeight - borderPadding - 100; // Extra 100 for other elements
+    const availableHeight = container.clientHeight - borderPadding - 24;
     
     viewportWidth = Math.floor(availableWidth / charWidth);
     viewportHeight = Math.floor(availableHeight / charHeight);
@@ -551,7 +640,19 @@ async function gameLoop() {
         mouse_delta_x: gameStateObj?.has_won ? 0.0 : mouseDeltaX,
         delta_time: deltaTime,
     };
-    
+
+    const activelyMoving =
+        !paused &&
+        !gameStateObj?.has_won &&
+        (keys.w || keys.a || keys.s || keys.d || keys.q || keys.e || Math.abs(mouseDeltaX) > 0.0001);
+    if (activelyMoving) {
+        movingFlush += Math.min(Math.max(deltaTime, 0), 0.05);
+        if (movingFlush >= 1) {
+            addMovingSeconds(movingFlush);
+            movingFlush = 0;
+        }
+    }
+
     // Reset mouse delta after using it
     mouseDeltaX = 0.0;
 
@@ -655,9 +756,7 @@ function displayFrame(frame) {
                 controls.className = `level-${level}`;
             }
             
-            // Ensure viewport maintains focus, especially on win screen
-            // This helps ensure spacebar presses are registered
-            if (gameStateObj.has_won && document.activeElement !== viewport) {
+            if (shouldHoldViewportFocus() && gameStateObj.has_won && document.activeElement !== viewport) {
                 viewport.focus();
             }
             syncWinScreenFlag(gameStateObj);
@@ -684,6 +783,7 @@ document.addEventListener(
 
 // Keyboard event handlers - listen on window to catch all keys
 window.addEventListener('keydown', async (e) => {
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     // Ignore gameplay keys while paused behind the landing overlay (Escape still handled below).
     if (paused && e.key !== 'Escape') {
         return;

@@ -1,12 +1,15 @@
 /**
- * Global run board. Display name only — no accounts.
+ * Global hiscores. ScoreRow shape is the seam for a later Postgres swap:
+ *   { id, playerId?, name, total, levels[8], at, movingSeconds? }
  *
  * Store order:
  *   1. Vercel KV / Upstash REST (`KV_REST_API_URL` + `KV_REST_API_TOKEN`)
  *   2. Vercel Blob (`BLOB_READ_WRITE_TOKEN`) at `matrix-maze-scores.json`
  *   3. In-process memory (preview / cold-start ephemeral — see docs/SCORES.md)
+ * Seed rows from scores-seed.json always merge unless that player already posted.
  */
 
+const SEED = require('../scores-seed.json');
 const KEY = 'matrix-maze-scores';
 const BLOB_PATH = 'matrix-maze-scores.json';
 const MAX_NAME = 16;
@@ -42,6 +45,20 @@ function normalizeRows(rows) {
   return rows
     .filter((row) => row && typeof row.total === 'number')
     .slice(0, MAX_ROWS);
+}
+
+function mergeSeed(rows) {
+  const list = Array.isArray(rows) ? [...rows] : [];
+  for (const seed of SEED) {
+    const taken = list.some(
+      (row) =>
+        row.id === seed.id ||
+        (row.playerId && seed.playerId && row.playerId === seed.playerId) ||
+        sanitizeName(row.name).toLowerCase() === sanitizeName(seed.name).toLowerCase()
+    );
+    if (!taken) list.push(seed);
+  }
+  return list;
 }
 
 async function kvGet() {
@@ -146,11 +163,11 @@ module.exports = async (req, res) => {
   if (req.method === 'GET') {
     try {
       const { rows, store } = await loadStore();
-      const sorted = [...rows].sort((a, b) => a.total - b.total).slice(0, 50);
+      const sorted = mergeSeed(rows).sort((a, b) => a.total - b.total).slice(0, 50);
       res.setHeader('Cache-Control', 'no-store');
       res.status(200).json({ scores: sorted, store });
     } catch (err) {
-      res.status(500).json({ error: err.message || 'board failed' });
+      res.status(500).json({ error: err.message || 'hiscores failed' });
     }
     return;
   }
@@ -173,19 +190,28 @@ module.exports = async (req, res) => {
       return;
     }
     const levels = Array.from({ length: 8 }, (_, i) => asTime(Array.isArray(body.levels) ? body.levels[i] : null));
+    const playerId = sanitizeName(body.playerId) || null;
+    const movingSeconds = asTime(body.movingSeconds);
 
     const row = {
       id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      playerId,
       name,
       total,
       levels,
+      movingSeconds,
       at: Date.now(),
     };
 
     const { rows, store } = await loadStore();
     const next = [row, ...rows].sort((a, b) => a.total - b.total).slice(0, MAX_ROWS);
     const savedAs = await saveStore(next, store);
-    res.status(200).json({ ok: true, score: row, scores: next.slice(0, 50), store: savedAs });
+    res.status(200).json({
+      ok: true,
+      score: row,
+      scores: mergeSeed(next).sort((a, b) => a.total - b.total).slice(0, 50),
+      store: savedAs,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message || 'submit failed' });
   }

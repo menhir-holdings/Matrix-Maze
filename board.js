@@ -1,7 +1,26 @@
-/** Shared display-name + global board client. No accounts. */
+/**
+ * Hiscores client.
+ *
+ * Store seam (swap later without UI changes):
+ *   ScoreRow { id, playerId?, name, total, levels[8], at, movingSeconds? }
+ *   GET/POST /api/scores  →  KV → Blob → memory, always merged with scores-seed.json
+ * Point loadStore/saveStore at Postgres when it exists; keep this row shape.
+ */
 
 export const DISPLAY_NAME_KEY = 'matrix_maze_display_name';
 export const MAX_NAME = 16;
+
+/** Keep in sync with scores-seed.json (local / desktop fallback). */
+export const SEED_SCORES = [
+    {
+        id: 'seed-philly-run',
+        playerId: 'philly',
+        name: 'philly',
+        total: 159.41,
+        levels: [null, null, null, null, null, null, null, null],
+        at: 1726272000000,
+    },
+];
 
 export function sanitizeName(raw) {
     const trimmed = String(raw || '')
@@ -67,45 +86,64 @@ function writeLocalBoard(rows) {
     }
 }
 
+export function mergeSeed(rows) {
+    const list = Array.isArray(rows) ? [...rows] : [];
+    for (const seed of SEED_SCORES) {
+        const taken = list.some(
+            (row) =>
+                row.id === seed.id ||
+                (row.playerId && row.playerId === seed.playerId) ||
+                sanitizeName(row.name).toLowerCase() === seed.name
+        );
+        if (!taken) list.push(seed);
+    }
+    return list;
+}
+
 export async function fetchScores() {
     try {
         const res = await fetch('/api/scores', { headers: { Accept: 'application/json' } });
         if (res.ok) {
             const data = await res.json();
             return {
-                scores: Array.isArray(data.scores) ? data.scores : [],
+                scores: mergeSeed(Array.isArray(data.scores) ? data.scores : []),
                 store: data.store || 'unknown',
             };
         }
     } catch {
         // Fall through to the local board (desktop / offline / cold API).
     }
-    return { scores: readLocalBoard(), store: 'local' };
+    return { scores: mergeSeed(readLocalBoard()), store: 'local' };
 }
 
-export async function submitScore({ name, total, levels }) {
+export async function submitScore({ name, total, levels, playerId, movingSeconds }) {
     const clean = saveDisplayName(name);
+    const body = { name: clean, total, levels, playerId, movingSeconds };
     try {
         const res = await fetch('/api/scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify({ name: clean, total, levels }),
+            body: JSON.stringify(body),
         });
         const data = await res.json().catch(() => ({}));
-        if (res.ok) return data;
+        if (res.ok) {
+            return { ...data, scores: mergeSeed(data.scores || []) };
+        }
         throw new Error(data.error || `Submit failed (${res.status})`);
     } catch (err) {
         const row = {
             id: `local-${Date.now()}`,
+            playerId: playerId || null,
             name: clean || 'RUNNER',
             total,
             levels: Array.isArray(levels) ? levels : [],
+            movingSeconds: typeof movingSeconds === 'number' ? movingSeconds : undefined,
             at: Date.now(),
         };
-        const scores = [row, ...readLocalBoard()].sort((a, b) => a.total - b.total).slice(0, 50);
-        writeLocalBoard(scores);
+        const local = [row, ...readLocalBoard()].sort((a, b) => a.total - b.total).slice(0, 50);
+        writeLocalBoard(local);
         if (!clean) throw err;
-        return { ok: true, score: row, scores, store: 'local' };
+        return { ok: true, score: row, scores: mergeSeed(local), store: 'local' };
     }
 }
 
@@ -122,7 +160,44 @@ export function sortScores(scores, filter) {
         .sort((a, b) => a.levels[idx] - b.levels[idx]);
 }
 
-export function renderBoardList(ol, scores, { filter = 'run', highlightId = null } = {}) {
+function samePlayer(row, { playerId, name }) {
+    if (playerId && row.playerId && row.playerId === playerId) return true;
+    return sanitizeName(row.name).toLowerCase() === sanitizeName(name).toLowerCase();
+}
+
+export function profileFromScores(scores, ident) {
+    const list = Array.isArray(scores) ? scores : [];
+    const mine = list.filter((row) => samePlayer(row, ident));
+    const runRows = sortScores(list, 'run');
+    const bestRun = sortScores(mine, 'run')[0] || null;
+    const overallRank = bestRun
+        ? runRows.findIndex((row) => row.id === bestRun.id) + 1
+        : null;
+    const levels = Array.from({ length: 8 }, (_, i) => {
+        const key = String(i + 1);
+        const ranked = sortScores(list, key);
+        const best = sortScores(mine, key)[0] || null;
+        const time = best ? best.levels[i] : null;
+        const rank = best ? ranked.findIndex((row) => row.id === best.id) + 1 : null;
+        return { level: i + 1, time, rank, of: ranked.length };
+    });
+    const movingFromRows = mine.reduce((max, row) => {
+        const value = Number(row.movingSeconds);
+        return Number.isFinite(value) && value > max ? value : max;
+    }, 0);
+    return {
+        name: ident.name || mine[0]?.name || 'Runner',
+        playerId: ident.playerId || mine[0]?.playerId || null,
+        bestRun,
+        overallRank,
+        overallOf: runRows.length,
+        levels,
+        movingSeconds:
+            typeof ident.movingSeconds === 'number' ? ident.movingSeconds : movingFromRows || undefined,
+    };
+}
+
+export function renderBoardList(ol, scores, { filter = 'run', highlightId = null, onName = null } = {}) {
     if (!ol) return;
     ol.replaceChildren();
     const rows = sortScores(scores, filter).slice(0, 20);
@@ -139,9 +214,13 @@ export function renderBoardList(ol, scores, { filter = 'run', highlightId = null
         const rank = document.createElement('span');
         rank.className = 'board-rank';
         rank.textContent = String(i + 1);
-        const who = document.createElement('span');
-        who.className = 'board-name';
+        const who = document.createElement('button');
+        who.type = 'button';
+        who.className = 'hiscore-name';
         who.textContent = row.name || 'Runner';
+        if (onName) {
+            who.addEventListener('click', () => onName(row));
+        }
         const time = document.createElement('span');
         time.className = 'board-time';
         const idx = filter === 'run' || !filter ? null : Number(filter) - 1;
@@ -149,4 +228,25 @@ export function renderBoardList(ol, scores, { filter = 'run', highlightId = null
         li.append(rank, who, time);
         ol.appendChild(li);
     });
+}
+
+export function bindFilterChips(root, onChange) {
+    if (!root) return;
+    const chips = [...root.querySelectorAll('[data-filter]')];
+    chips.forEach((chip) => {
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            chips.forEach((c) => {
+                const on = c === chip;
+                c.classList.toggle('is-on', on);
+                c.setAttribute('aria-selected', on ? 'true' : 'false');
+            });
+            onChange?.(chip.getAttribute('data-filter') || 'run');
+        });
+    });
+}
+
+export function currentFilter(root) {
+    return root?.querySelector('[data-filter].is-on')?.getAttribute('data-filter') || 'run';
 }

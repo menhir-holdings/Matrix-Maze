@@ -14,7 +14,7 @@
         <div id="level-indicator">Level 1</div>
         <div id="viewport"></div>
         <div id="controls">
-            <p>WASD: Move | Q/E: Turn | SPACE: Next | R: Replay level</p>
+            <p>WASD move · Mouse or Q/E turn · Space next · R replay</p>
         </div>
     </div>
     <aside id="finish-plate" hidden>
@@ -28,21 +28,28 @@
         </form>
         <div id="board-wrap" hidden>
             <div class="board-toolbar">
-                <h2>Board</h2>
-                <select id="board-filter">
-                    <option value="run">Full run</option>
-                    <option value="1">Level 1</option>
-                    <option value="2">Level 2</option>
-                    <option value="3">Level 3</option>
-                    <option value="4">Level 4</option>
-                    <option value="5">Level 5</option>
-                    <option value="6">Level 6</option>
-                    <option value="7">Level 7</option>
-                    <option value="8">Level 8</option>
-                </select>
+                <h2>Hiscores</h2>
+                <div class="hiscore-filters" id="board-filter" role="tablist" aria-label="Hiscore view">
+                    <button type="button" data-filter="run" class="is-on" aria-selected="true">Full run</button>
+                    <button type="button" data-filter="1" aria-selected="false">L1</button>
+                    <button type="button" data-filter="2" aria-selected="false">L2</button>
+                    <button type="button" data-filter="3" aria-selected="false">L3</button>
+                    <button type="button" data-filter="4" aria-selected="false">L4</button>
+                    <button type="button" data-filter="5" aria-selected="false">L5</button>
+                    <button type="button" data-filter="6" aria-selected="false">L6</button>
+                    <button type="button" data-filter="7" aria-selected="false">L7</button>
+                    <button type="button" data-filter="8" aria-selected="false">L8</button>
+                </div>
             </div>
             <ol id="board-list"></ol>
             <button type="button" id="play-again">Play again</button>
+        </div>
+        <div id="profile-wrap" hidden>
+            <button type="button" class="profile-back" id="profile-back">Hiscores</button>
+            <h2 id="profile-name">Player</h2>
+            <p class="profile-stat" id="profile-overall"></p>
+            <p class="profile-stat" id="profile-moving"></p>
+            <ol id="profile-levels"></ol>
         </div>
     </aside>
     <div id="touch-controls" aria-hidden="true">
@@ -62,4 +69,3 @@
     <script type="module" src="/src/main.js"></script>
 </body>
 </html>
-
