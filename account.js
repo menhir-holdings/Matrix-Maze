@@ -1,6 +1,6 @@
-/** Local-first player. Same shape a later KV/Postgres player row should use. */
+/** Local handle on this browser. One active player. Not an account, signup, or sign-in. */
 
-import { sanitizeName } from './board.js';
+import { sanitizeName, saveDisplayName } from './board.js';
 
 export const PLAYER_KEY = 'mm-player';
 
@@ -28,6 +28,10 @@ export function savePlayer(player) {
     return player;
 }
 
+export function currentHandle() {
+    return loadPlayer()?.name || '';
+}
+
 export function ensurePlayer(name) {
     const clean = sanitizeName(name);
     let player = loadPlayer();
@@ -41,7 +45,14 @@ export function ensurePlayer(name) {
     } else if (clean) {
         player.name = clean;
     }
+    if (player.name) saveDisplayName(player.name);
     return savePlayer(player);
+}
+
+export function setHandle(name) {
+    const clean = sanitizeName(name);
+    if (!clean) return loadPlayer();
+    return ensurePlayer(clean);
 }
 
 export function addMovingSeconds(delta) {

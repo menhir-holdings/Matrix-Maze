@@ -106,6 +106,10 @@
             display: none;
         }
 
+        #overlay.finish #skip-finish {
+            display: none;
+        }
+
         .title {
             font-family: Oswald, ui-sans-serif, sans-serif;
             font-size: clamp(2.6rem, 9vw, 6.2rem);
@@ -148,6 +152,124 @@
             background: var(--ink);
             color: #111;
             outline: none;
+        }
+
+        .play-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #skip-finish {
+            min-width: 168px;
+            padding: 10px 28px;
+            font-family: inherit;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--ink);
+            background: transparent;
+            border: 1.5px solid rgba(244, 241, 234, 0.55);
+            border-radius: 999px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+        }
+
+        #skip-finish:hover,
+        #skip-finish:focus-visible {
+            background: rgba(247, 244, 236, 0.12);
+            outline: none;
+        }
+
+        .identity {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: min(280px, 80vw);
+        }
+
+        .you-are {
+            margin: 0;
+            font-size: 0.92rem;
+            color: var(--ink);
+            text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
+        }
+
+        .you-are button {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0 0 0 8px;
+            font: inherit;
+            font-size: 0.78rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--muted);
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
+        .you-are button:hover,
+        .you-are button:focus-visible {
+            color: var(--ink);
+            outline: none;
+        }
+
+        #handle-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .handle-row {
+            display: flex;
+            gap: 8px;
+            width: min(280px, 80vw);
+        }
+
+        #handle-input {
+            flex: 1;
+            min-width: 0;
+            padding: 8px 10px;
+            font: inherit;
+            font-size: 0.95rem;
+            color: var(--ink);
+            caret-color: var(--ink);
+            color-scheme: dark;
+            background: var(--cabinet);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+        }
+
+        #handle-form button {
+            padding: 8px 14px;
+            font: inherit;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #111;
+            background: var(--ink);
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        .plate-note {
+            margin: 8px 0 0;
+            font-size: 0.82rem;
+            color: var(--muted);
+        }
+
+        .plate-note[hidden] {
+            display: none;
         }
 
         #play-hint {
@@ -624,8 +746,21 @@
             <p class="pause-mark">Paused</p>
             <h1 class="title">Matrix Maze</h1>
             <p class="tag">Navigate the labyrinth, escape the matrix.</p>
-            <button id="play-btn" type="button">Play</button>
+            <div class="play-actions">
+                <button id="play-btn" type="button">Play</button>
+                <button id="skip-finish" type="button">Skip to finish</button>
+            </div>
             <p id="play-hint">Press <kbd>Esc</kbd> anytime to pause</p>
+            <div class="identity" id="identity">
+                <p class="you-are" id="you-are" hidden>You are <strong id="you-handle"></strong><button type="button" id="edit-handle">Edit</button></p>
+                <form id="handle-form">
+                    <label for="handle-input">Handle</label>
+                    <div class="handle-row">
+                        <input id="handle-input" name="handle" maxlength="16" autocomplete="nickname" placeholder="Your handle">
+                        <button type="submit">Save</button>
+                    </div>
+                </form>
+            </div>
             <nav class="hud-links" aria-label="Shell">
                 <button type="button" data-open="howto">Controls</button>
                 <button type="button" id="open-board">Hiscores</button>
@@ -638,14 +773,16 @@
             <p class="plate-kicker">Run complete</p>
             <p class="plate-time" id="finish-time">--:--.--</p>
             <form id="name-form">
-                <label for="display-name">Your name</label>
+                <label for="display-name">Handle</label>
                 <input id="display-name" name="display-name" maxlength="16" autocomplete="nickname" required>
-                <button type="submit">Submit time</button>
+                <button type="submit" id="name-submit">Submit time</button>
+                <p class="plate-note" id="plate-note" hidden></p>
                 <p class="plate-error" id="plate-error"></p>
             </form>
             <div id="board-wrap" hidden>
                 <div class="board-toolbar">
                     <h2>Hiscores</h2>
+                    <p class="you-are" id="board-you">You are <strong id="board-handle"></strong><button type="button" id="board-edit-handle">Edit</button></p>
                     <div class="hiscore-filters" id="board-filter" role="tablist" aria-label="Hiscore view">
                         <button type="button" data-filter="run" class="is-on" aria-selected="true">Full run</button>
                         <button type="button" data-filter="1" aria-selected="false">L1</button>
@@ -697,6 +834,7 @@
                     </div>
                 </div>
                 <p class="muted">Reach the exit of all 8 levels as fast as you can.</p>
+                <p class="muted"><strong>Skip to finish</strong> on the title plate is a review control — it opens the finish plate without playing all 8 levels.</p>
             </section>
 
             <section id="panel-download" hidden>
@@ -739,13 +877,16 @@
             loadDisplayName,
             profileFromScores,
             renderBoardList,
+            reviewFinishPayload,
             submitScore,
+            wantsReviewSkip,
         } from '/board.js';
-        import { ensurePlayer, formatMoving, loadPlayer } from '/account.js';
+        import { currentHandle, formatMoving, loadPlayer, setHandle } from '/account.js';
 
         // --- Play/pause coordination with the embedded game ---
         const overlay = document.getElementById('overlay');
         const playBtn = document.getElementById('play-btn');
+        const skipFinish = document.getElementById('skip-finish');
         const gameFrame = document.getElementById('game-frame');
         const drawer = document.getElementById('drawer');
         const drawerTitle = document.getElementById('drawer-title');
@@ -755,7 +896,9 @@
         const finishTime = document.getElementById('finish-time');
         const plateKicker = finishPlate?.querySelector('.plate-kicker');
         const nameForm = document.getElementById('name-form');
+        const nameSubmit = document.getElementById('name-submit');
         const displayName = document.getElementById('display-name');
+        const plateNote = document.getElementById('plate-note');
         const plateError = document.getElementById('plate-error');
         const boardWrap = document.getElementById('board-wrap');
         const boardList = document.getElementById('board-list');
@@ -768,11 +911,65 @@
         const profileOverall = document.getElementById('profile-overall');
         const profileMoving = document.getElementById('profile-moving');
         const profileLevels = document.getElementById('profile-levels');
+        const youAre = document.getElementById('you-are');
+        const youHandle = document.getElementById('you-handle');
+        const editHandle = document.getElementById('edit-handle');
+        const handleForm = document.getElementById('handle-form');
+        const handleInput = document.getElementById('handle-input');
+        const boardYou = document.getElementById('board-you');
+        const boardHandle = document.getElementById('board-handle');
+        const boardEditHandle = document.getElementById('board-edit-handle');
         let hasStarted = false;
         let pendingRun = null;
         let boardRows = [];
         let highlightId = null;
         let browsingBoard = false;
+
+        function activeHandle() {
+            return currentHandle() || loadDisplayName();
+        }
+
+        function paintHandle() {
+            const handle = activeHandle();
+            if (youHandle) youHandle.textContent = handle;
+            if (boardHandle) boardHandle.textContent = handle || '—';
+            if (displayName && !displayName.matches(':focus')) {
+                displayName.value = handle;
+            }
+            if (handleInput && handleForm && !handleForm.hidden && !handleInput.matches(':focus')) {
+                handleInput.value = handle;
+            }
+            if (youAre) youAre.hidden = !handle;
+            if (handleForm) handleForm.hidden = Boolean(handle);
+            if (boardYou) boardYou.hidden = !handle;
+        }
+
+        function openHandleEdit(fromBoard) {
+            const handle = activeHandle();
+            if (fromBoard) {
+                if (nameForm) nameForm.hidden = false;
+                if (nameSubmit) nameSubmit.textContent = pendingRun ? 'Submit time' : 'Save handle';
+                if (displayName) {
+                    displayName.value = handle;
+                    displayName.focus();
+                    displayName.select();
+                }
+                return;
+            }
+            if (handleForm) handleForm.hidden = false;
+            if (youAre) youAre.hidden = true;
+            if (handleInput) {
+                handleInput.value = handle;
+                handleInput.focus();
+                handleInput.select();
+            }
+        }
+
+        function saveActiveHandle(raw) {
+            const player = setHandle(raw);
+            paintHandle();
+            return player;
+        }
 
         function closeDrawer() {
             if (!drawer) return;
@@ -870,6 +1067,8 @@
             if (profileWrap) profileWrap.hidden = true;
             if (playAgain) playAgain.hidden = true;
             if (boardAgain) boardAgain.hidden = false;
+            if (nameSubmit) nameSubmit.textContent = 'Save handle';
+            paintHandle();
             try {
                 const data = await fetchScores();
                 boardRows = data.scores;
@@ -895,15 +1094,27 @@
             if (playAgain) playAgain.hidden = false;
             if (boardAgain) boardAgain.hidden = true;
             if (finishTime) finishTime.textContent = formatClock(run?.total);
-            const saved = loadPlayer()?.name || loadDisplayName();
+            if (nameSubmit) nameSubmit.textContent = 'Submit time';
+            const saved = activeHandle();
             if (displayName) displayName.value = saved;
             if (plateError) plateError.textContent = '';
+            if (plateNote) {
+                plateNote.hidden = !run?.reviewSkip;
+                plateNote.textContent = run?.reviewSkip
+                    ? 'Review skip — last-run or dummy times.'
+                    : '';
+            }
+            paintHandle();
             closeDrawer();
             postToGame('chrome');
             window.setTimeout(() => {
                 displayName?.focus();
                 displayName?.select();
             }, 30);
+        }
+
+        function skipToFinish() {
+            showFinishPlate(reviewFinishPayload());
         }
 
         function postToGame(type) {
@@ -935,10 +1146,25 @@
 
         nameForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!pendingRun) return;
             if (plateError) plateError.textContent = '';
+            if (!pendingRun) {
+                try {
+                    saveActiveHandle(displayName?.value);
+                    if (nameForm) nameForm.hidden = true;
+                    if (boardWrap) boardWrap.hidden = false;
+                    paintHandle();
+                } catch (err) {
+                    if (plateError) plateError.textContent = err.message;
+                }
+                return;
+            }
             try {
-                const player = ensurePlayer(displayName?.value);
+                const player = saveActiveHandle(displayName?.value);
+                if (!player?.name) {
+                    if (plateError) plateError.textContent = 'Set a handle to post the time.';
+                    displayName?.focus();
+                    return;
+                }
                 const result = await submitScore({
                     name: player.name,
                     playerId: player.id,
@@ -952,6 +1178,7 @@
                 if (boardWrap) boardWrap.hidden = false;
                 if (profileWrap) profileWrap.hidden = true;
                 paintBoard();
+                paintHandle();
             } catch (err) {
                 if (plateError) plateError.textContent = err.message;
             }
@@ -959,6 +1186,18 @@
 
         bindFilterChips(boardFilter, () => paintBoard());
         document.getElementById('open-board')?.addEventListener('click', showBrowseBoard);
+        skipFinish?.addEventListener('click', skipToFinish);
+        editHandle?.addEventListener('click', () => openHandleEdit(false));
+        boardEditHandle?.addEventListener('click', () => openHandleEdit(true));
+        handleForm?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const player = saveActiveHandle(handleInput?.value);
+            if (!player?.name) {
+                handleInput?.focus();
+                return;
+            }
+            paintHandle();
+        });
         profileBack?.addEventListener('click', () => {
             if (profileWrap) profileWrap.hidden = true;
             if (boardWrap) boardWrap.hidden = false;
@@ -1143,6 +1382,10 @@
         }
 
         updateDownloadLinks();
+        paintHandle();
+        if (wantsReviewSkip()) {
+            skipToFinish();
+        }
     </script>
 </body>
 </html>

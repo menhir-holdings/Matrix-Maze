@@ -9,8 +9,8 @@
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32">
     <link rel="icon" href="/favicon-16.png" type="image/png" sizes="16x16">
     
-  <script type="module" crossorigin src="/game/assets/index-15a3b2eb.js"></script>
-  <link rel="stylesheet" href="/game/assets/index-dc4ff3d1.css">
+  <script type="module" crossorigin src="/game/assets/index-fde432c2.js"></script>
+  <link rel="stylesheet" href="/game/assets/index-c142ea28.css">
 </head>
 <body>
     <div id="app">
@@ -24,14 +24,16 @@
         <p class="plate-kicker">Run complete</p>
         <p class="plate-time" id="finish-time">--:--.--</p>
         <form id="name-form">
-            <label for="display-name">Your name</label>
+            <label for="display-name">Handle</label>
             <input id="display-name" name="display-name" maxlength="16" autocomplete="nickname" required>
-            <button type="submit">Submit time</button>
+            <button type="submit" id="name-submit">Submit time</button>
+            <p class="plate-note" id="plate-note" hidden></p>
             <p class="plate-error" id="plate-error"></p>
         </form>
         <div id="board-wrap" hidden>
             <div class="board-toolbar">
                 <h2>Hiscores</h2>
+                <p class="you-are" id="board-you">You are <strong id="board-handle"></strong><button type="button" id="board-edit-handle">Edit</button></p>
                 <div class="hiscore-filters" id="board-filter" role="tablist" aria-label="Hiscore view">
                     <button type="button" data-filter="run" class="is-on" aria-selected="true">Full run</button>
                     <button type="button" data-filter="1" aria-selected="false">L1</button>

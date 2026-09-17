@@ -250,3 +250,32 @@ export function bindFilterChips(root, onChange) {
 export function currentFilter(root) {
     return root?.querySelector('[data-filter].is-on')?.getAttribute('data-filter') || 'run';
 }
+
+/** QC skip: `?finish=1` or `?level=8` opens the finish plate without playing 8 levels. */
+export function wantsReviewSkip(search = typeof location !== 'undefined' ? location.search : '') {
+    const q = new URLSearchParams(search);
+    if (q.get('finish') === '1') return true;
+    return q.get('level') === '8';
+}
+
+/** Last local run if one exists, else dummy splits. For review skip only. */
+export function reviewFinishPayload() {
+    const last = readLocalBoard().find((row) => typeof row.total === 'number');
+    if (last) {
+        return {
+            total: last.total,
+            levels: Array.from({ length: 8 }, (_, i) =>
+                typeof last.levels?.[i] === 'number' ? last.levels[i] : null
+            ),
+            newRecord: false,
+            reviewSkip: true,
+        };
+    }
+    const levels = [19.5, 21, 22.5, 24, 25.5, 27, 28.5, 30];
+    return {
+        total: levels.reduce((sum, n) => sum + n, 0),
+        levels,
+        newRecord: false,
+        reviewSkip: true,
+    };
+}

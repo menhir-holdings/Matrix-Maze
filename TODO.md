@@ -4,8 +4,8 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Cardless overlay + cream type, Quake/Source wall-slide, hiscores
-- [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Local player accounts + hiscore profiles
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Compact LEVEL START plate, Skip to finish, hiscores
+- [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Local handle (one per browser) + hiscore profiles
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 

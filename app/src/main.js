@@ -2,7 +2,7 @@ import { createBackend } from './backend.js';
 import { LEVEL_COLORS } from './constants.js';
 import { AdaptiveMusic } from './music.js';
 import { bindArcadePlate } from './arcade-plate.js';
-import { addMovingSeconds, ensurePlayer, formatMoving, loadPlayer } from '../../account.js';
+import { addMovingSeconds, currentHandle, formatMoving, loadPlayer, setHandle } from '../../account.js';
 import {
     bindFilterChips,
     currentFilter,
@@ -13,7 +13,9 @@ import {
     profileFromScores,
     recordLevel,
     renderBoardList,
+    reviewFinishPayload,
     submitScore,
+    wantsReviewSkip,
 } from './scores.js';
 
 const loadBoardName = loadDisplayName;
@@ -112,11 +114,16 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
     const timeEl = root.querySelector('#finish-time');
     const form = root.querySelector('#name-form');
     const nameInput = root.querySelector('#display-name');
+    const nameSubmit = root.querySelector('#name-submit');
+    const noteEl = root.querySelector('#plate-note');
     const errEl = root.querySelector('#plate-error');
     const wrap = root.querySelector('#board-wrap');
     const list = root.querySelector('#board-list');
     const filter = root.querySelector('#board-filter');
     const again = root.querySelector('#play-again');
+    const boardHandle = root.querySelector('#board-handle');
+    const boardEditHandle = root.querySelector('#board-edit-handle');
+    const boardYou = root.querySelector('#board-you');
     const profileWrap = root.querySelector('#profile-wrap');
     const profileBack = root.querySelector('#profile-back');
     const profileName = root.querySelector('#profile-name');
@@ -133,6 +140,13 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
             highlightId,
             onName: showProfile,
         });
+    }
+
+    function paintYou() {
+        const handle = currentHandle() || loadBoardName();
+        if (boardHandle) boardHandle.textContent = handle || '—';
+        if (boardYou) boardYou.hidden = !handle;
+        if (nameInput && !nameInput.matches(':focus')) nameInput.value = handle;
     }
 
     function showProfile(row) {
@@ -176,10 +190,21 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
 
     form?.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!pending) return;
         if (errEl) errEl.textContent = '';
+        if (!pending) {
+            setHandle(nameInput?.value);
+            paintYou();
+            if (form) form.hidden = true;
+            if (wrap) wrap.hidden = false;
+            return;
+        }
         try {
-            const player = ensurePlayer(nameInput?.value);
+            const player = setHandle(nameInput?.value);
+            if (!player?.name) {
+                if (errEl) errEl.textContent = 'Set a handle to post the time.';
+                nameInput?.focus();
+                return;
+            }
             const result = await submitScore({
                 name: player.name,
                 playerId: player.id,
@@ -193,6 +218,7 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
             if (wrap) wrap.hidden = false;
             if (profileWrap) profileWrap.hidden = true;
             paint();
+            paintYou();
         } catch (err) {
             if (errEl) errEl.textContent = err.message;
         }
@@ -201,6 +227,12 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
     profileBack?.addEventListener('click', () => {
         if (profileWrap) profileWrap.hidden = true;
         if (wrap) wrap.hidden = false;
+    });
+    boardEditHandle?.addEventListener('click', () => {
+        if (form) form.hidden = false;
+        if (nameSubmit) nameSubmit.textContent = pending ? 'Submit time' : 'Save handle';
+        nameInput?.focus();
+        nameInput?.select();
     });
     again?.addEventListener('click', () => onPlayAgain?.());
 
@@ -213,8 +245,16 @@ function bindStandaloneFinish(root, { onPlayAgain } = {}) {
             if (wrap) wrap.hidden = true;
             if (profileWrap) profileWrap.hidden = true;
             if (timeEl) timeEl.textContent = formatClock(payload?.total);
-            if (nameInput) nameInput.value = loadPlayer()?.name || loadBoardName();
+            if (nameSubmit) nameSubmit.textContent = 'Submit time';
+            if (nameInput) nameInput.value = currentHandle() || loadBoardName();
             if (errEl) errEl.textContent = '';
+            if (noteEl) {
+                noteEl.hidden = !payload?.reviewSkip;
+                noteEl.textContent = payload?.reviewSkip
+                    ? 'Review skip — last-run or dummy times.'
+                    : '';
+            }
+            paintYou();
             try {
                 const data = await fetchScores();
                 rows = data.scores;
@@ -421,6 +461,8 @@ async function init() {
             paused = true;
             pausedAt = performance.now() / 1000.0;
             window.addEventListener('message', handleShellMessage);
+        } else if (wantsReviewSkip()) {
+            arcade?.showFinish(reviewFinishPayload());
         }
 
         const stateJson = await backend.initGame();
@@ -522,7 +564,8 @@ async function startPlaying() {
     pausedAt = null;
     paused = false;
     lastFrameTime = performance.now() / 1000.0; // avoid a large delta on the first live frame
-    ensurePlayer(loadPlayer()?.name || loadDisplayName() || '');
+    const handle = currentHandle() || loadDisplayName();
+    if (handle) setHandle(handle);
     await music.resume();
     if (viewport) viewport.focus();
     postToShell('playing');

@@ -68,21 +68,25 @@ pub struct PlayerInput {
     pub delta_time: f64, // Time elapsed since last frame in seconds
 }
 
-/// Blank a plate behind HUD text so letters sit on black, not dither.
+/// Blank a tight plate behind HUD text so letters sit on black, not dither.
+/// Pad is ~2 characters on each side of the glyphs — never a full-width row.
 fn stamp_line(line: &mut [char], width: usize, text: &str, blank_plate: bool) {
     if width == 0 {
         return;
-    }
-    if blank_plate {
-        for slot in line.iter_mut().take(width) {
-            *slot = ' ';
-        }
     }
     if text.is_empty() {
         return;
     }
     let count = text.chars().count();
     let start = width.saturating_sub(count) / 2;
+    if blank_plate {
+        let pad = 2;
+        let plate_start = start.saturating_sub(pad);
+        let plate_end = (start + count + pad).min(width);
+        for col in plate_start..plate_end {
+            line[col] = ' ';
+        }
+    }
     for (i, ch) in text.chars().enumerate() {
         let col = start + i;
         if col < width {
@@ -621,42 +625,30 @@ impl GameState {
             return new_frame;
         }
         
-        // Overlay start message that flashes for 3 seconds
+        // Compact LEVEL START cue for 3s: plate under the glyphs only, no flash, no full-width band.
         let current_time = platform::now_secs();
         let elapsed = current_time - self.level_start_time;
         if elapsed < 3.0 {
-            // Flash: show for 0.5s, hide for 0.3s, repeat
-            let flash_cycle = 0.8; // 0.5s on + 0.3s off
-            let phase = (elapsed % flash_cycle) / flash_cycle;
-            if phase < 0.625 { // Show for 62.5% of cycle (0.5s / 0.8s)
-                let message = format!("LEVEL {} - FIND THE EXIT!", self.current_level);
-                let message_row = height / 2;
+            let message = format!("LEVEL {} - FIND THE EXIT!", self.current_level);
+            let message_row = height / 2;
 
-                let lines: Vec<&str> = frame.split('\n').collect();
-                let mut new_frame = String::new();
-                for (row_idx, line) in lines.iter().enumerate() {
-                    let mut new_line: Vec<char> = line.chars().take(width).collect();
-                    while new_line.len() < width {
-                        new_line.push(' ');
-                    }
-                    new_line.truncate(width);
-                    // Clear a 3-row band so the cue sits on black, not dither.
-                    if row_idx + 1 >= message_row && row_idx <= message_row + 1 {
-                        if row_idx == message_row {
-                            stamp_line(&mut new_line, width, &message, true);
-                        } else {
-                            for ch in new_line.iter_mut() {
-                                *ch = ' ';
-                            }
-                        }
-                    }
-                    new_frame.push_str(&new_line.iter().collect::<String>());
-                    if row_idx < lines.len() - 1 {
-                        new_frame.push('\n');
-                    }
+            let lines: Vec<&str> = frame.split('\n').collect();
+            let mut new_frame = String::new();
+            for (row_idx, line) in lines.iter().enumerate() {
+                let mut new_line: Vec<char> = line.chars().take(width).collect();
+                while new_line.len() < width {
+                    new_line.push(' ');
                 }
-                return new_frame;
+                new_line.truncate(width);
+                if row_idx == message_row {
+                    stamp_line(&mut new_line, width, &message, true);
+                }
+                new_frame.push_str(&new_line.iter().collect::<String>());
+                if row_idx < lines.len() - 1 {
+                    new_frame.push('\n');
+                }
             }
+            return new_frame;
         }
         
         frame
@@ -879,6 +871,41 @@ mod gold_path_tests {
         assert!(!replayed.has_won);
         assert_eq!(replayed.run_times[0], None);
         assert_eq!(replayed.total_time, 0.0);
+    }
+
+    #[test]
+    fn level_start_cue_is_compact_plate_not_full_width_band() {
+        let mut state = GameState::new();
+        state.level_start_time = platform::now_secs();
+        let width = 80;
+        let height = 24;
+        let frame = state.render_frame(width, height);
+        let lines: Vec<&str> = frame.lines().collect();
+        let message_row = height / 2;
+        let line = lines[message_row];
+        assert!(
+            line.contains("LEVEL 1 - FIND THE EXIT!"),
+            "start cue missing on row {message_row}: {line:?}"
+        );
+        let spaces = line.chars().filter(|c| *c == ' ').count();
+        assert!(
+            spaces < width / 2,
+            "start cue blanked too much of the row ({spaces}/{width}): {line:?}"
+        );
+        if message_row > 0 {
+            let above_spaces = lines[message_row - 1].chars().filter(|c| *c == ' ').count();
+            assert!(
+                above_spaces < width.saturating_sub(4),
+                "row above start cue must not be a full-width blank band"
+            );
+        }
+        if message_row + 1 < lines.len() {
+            let below_spaces = lines[message_row + 1].chars().filter(|c| *c == ' ').count();
+            assert!(
+                below_spaces < width.saturating_sub(4),
+                "row below start cue must not be a full-width blank band"
+            );
+        }
     }
 }
 

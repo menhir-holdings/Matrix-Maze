@@ -1,6 +1,6 @@
 # Matrix Maze scores
 
-Global hiscores for finished 8-level runs, plus a local-first player row.
+Global hiscores for finished 8-level runs, plus one local **handle** on this browser.
 
 ## Row seam
 
@@ -11,7 +11,7 @@ ScoreRow { id, playerId?, name, total, levels[8], at, movingSeconds? }
 Player   { id, name, createdAt, movingSeconds }
 ```
 
-`playerId` is the account key. Names are display-only (1–16 chars). Clicking a name on the hiscore list opens a profile: best full-run + rank, per-level time + rank, and **moving** playtime (WASD / QE / mouse look only — pause, idle, level-complete, and game-complete do not count).
+`playerId` keys the local handle. Names are display-only (1–16 chars). There is no signup, sign-in, Clerk, or email. Clicking a name on the hiscore list opens that player's times (same sheet if it is yours): best full-run + rank, per-level time + rank, and **moving** playtime (WASD / QE / mouse look only — pause, idle, level-complete, and game-complete do not count).
 
 ## API
 
@@ -20,9 +20,11 @@ Player   { id, name, createdAt, movingSeconds }
 | `GET /api/scores` | Top 50 full-run times, fastest first. `{ scores, store }` always merged with `scores-seed.json` |
 | `POST /api/scores` | `{ name, total, levels[8], playerId?, movingSeconds? }` → `{ ok, score, scores, store }` |
 
-Local player lives in `localStorage.mm-player`. Display name also in `matrix_maze_display_name`.
+Local handle lives in `localStorage.mm-player`. Display name also in `matrix_maze_display_name`.
 
 Seeded hiscore: **philly** 2:39.41 (`scores-seed.json`). Remove or edit that file when live times replace it.
+
+**Skip to finish** on the title plate (also `?finish=1` or `?level=8`) opens the finish plate with last-run or dummy times so review can QC without playing all 8 levels.
 
 ## Store (Vercel-safe)
 

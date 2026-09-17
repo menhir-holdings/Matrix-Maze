@@ -124,7 +124,7 @@ export function bindArcadePlate(root, { onPlayAgain } = {}) {
         const name = saveDisplayName(nameInput?.value || '');
         if (nameInput) nameInput.value = name;
         if (!name) {
-            if (noteEl) noteEl.textContent = 'Type a name to post the time.';
+            if (noteEl) noteEl.textContent = 'Set a handle to post the time.';
             nameInput?.focus();
             return;
         }
@@ -190,7 +190,7 @@ export function bindArcadePlate(root, { onPlayAgain } = {}) {
             if (timeEl) timeEl.textContent = formatTime(pending?.total);
             if (noteEl) {
                 noteEl.textContent = pending
-                    ? 'Type a name, post the time, then play again.'
+                    ? 'Confirm your handle, post the time, then play again.'
                     : 'Local full-run and per-level times.';
             }
             if (nameInput) {

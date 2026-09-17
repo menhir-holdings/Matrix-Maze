@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-09-14  
+**As of:** 2026-09-17  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
 **Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
 **Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
@@ -20,14 +20,14 @@
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Cardless overlay, cream type, Quake/Source move-slide, hiscores + local player accounts (click a name for profile, moving playtime). Seeded **philly** 2:39.41.
+- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Compact LEVEL START plate (no flash / no full-width band), **Skip to finish** review control, local **handle** (not accounts). Hiscores + click a name for that player's times. Seeded **philly** 2:39.41.
 
 ## Shell vs WASM
 
 | Lives in web chrome (`/`) | Lives in the game view (`/game/` WASM) |
 |---|---|
-| Title, Play/Resume, pause, controls, download | Maze sim, raycast, movement, level timer |
-| Finish name plate + hiscores + player profile | L1–7 complete ASCII, `SPACE` next, `R` replay |
+| Title, Play/Resume, **Skip to finish**, handle, pause, controls, download | Maze sim, raycast, movement, level timer |
+| Finish handle confirm + hiscores + player profile | L1–7 complete ASCII, `SPACE` next, `R` replay |
 | Esc overlay | Pointer-lock look, touch pad, in-run HUD |
 
 One hop after level 8: game posts `run-complete`, shell shows the plate. No extra lobby.
