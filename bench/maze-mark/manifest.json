@@ -1,0 +1,22 @@
+{
+  "id": "maze-mark",
+  "product": "Matrix Maze",
+  "subject": "favicon",
+  "brief": "16px-first tab mark. Faithful to the dithered maze. No wordmark (or 1px implied). Do not ship until Phil picks.",
+  "frame": "/bench/maze-mark.html",
+  "axes": [
+    "control PNG vs crop vs plan",
+    "corridor / path / door",
+    "player glyph vs turn chevrons"
+  ],
+  "takes": {
+    "A": "32px PNG well + MATRIX wordmark. Pixelates at 16px; too much lettering for a tab.",
+    "B": "Same dithered well, cropped to the pit. No title band.",
+    "C": "Plan of a tiny perfect maze. Walls are one unit; no title.",
+    "D": "One corridor meeting a crossbar. Reads as maze, not a plus-cubie or D-pad.",
+    "E": "The intended ribbon on black \u2014 gold path as the mark, walls implied.",
+    "F": "A rectangle opening and one path into it. The run\u2019s job, not the map.",
+    "G": "The dungeon glyph is the mark. Pixel @, no wordmark.",
+    "H": "Turn left / turn right. Two chevrons only \u2014 not a four-way pad."
+  }
+}
