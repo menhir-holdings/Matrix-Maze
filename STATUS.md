@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-09-17  
+**As of:** 2026-09-18  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
 **Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
 **Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
@@ -17,10 +17,12 @@
 - Vercel deploy; GitHub releases proxy for desktop downloads
 - `/play` + `/dev` retired ([MT-102](https://linear.app/menhir-holdings/issue/MT-102))
 - Web shell restyle (cabinet/title overlay) ([MT-208](https://linear.app/menhir-holdings/issue/MT-208))
+- Compact LEVEL START plate, Skip to finish, local handle + hiscores ([MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230))
+- Tab / desktop mark is Bench take **D** (T-junction), not the runner or 32px wordmark
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Compact LEVEL START plate (no flash / no full-width band), **Skip to finish** review control, local **handle** (not accounts). Hiscores + click a name for that player's times. Seeded **philly** 2:39.41.
+- Account / monument identity — parked (`docs/identity-parked.md` local only; not this ship)
 
 ## Shell vs WASM
 

@@ -4,8 +4,7 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-223](https://linear.app/menhir-holdings/issue/MT-223) — Compact LEVEL START plate, Skip to finish, hiscores
-- [MT-230](https://linear.app/menhir-holdings/issue/MT-230) — Local handle (one per browser) + hiscore profiles
+- Account / monument identity — parked until a later lock (no-reset, beat-old-score). Not MT-223.
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 

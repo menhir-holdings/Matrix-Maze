@@ -1,4 +1,4 @@
-"""Generate Maze tab-mark Bench round (design-only; does not touch favicon.svg)."""
+"""Generate Maze tab-mark Bench round. Production favicon is Bench take D (T-junction)."""
 from __future__ import annotations
 
 import json
@@ -378,7 +378,7 @@ HTML = r'''<!DOCTYPE html>
 <header class="bench">
   <p class="kicker">Bench · one product · one subject</p>
   <h1>Matrix Maze tab mark</h1>
-  <p class="brief">Eight orthogonal takes of the favicon. Nested windows are Maze-shaped (cabinet chrome, green well, Play). Production <code>favicon.svg</code> is untouched — pick / kill / splice before anything ships.</p>
+  <p class="brief">Eight orthogonal takes of the favicon. Nested windows are Maze-shaped (cabinet chrome, green well, Play). <strong>Take D (T-junction)</strong> is locked as production <code>favicon.svg</code> / Tauri icon.</p>
 </header>
 <div class="grid" id="grid"></div>
 <script>
