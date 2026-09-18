@@ -36,7 +36,7 @@ tauri = { version = "2.0", features = [] }
 
 # Browser-only: wasm-bindgen glue plus JS interop for time, RNG entropy and localStorage.
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "=0.2.100"
+wasm-bindgen = "=0.2.126"
 js-sys = "0.3"
 web-sys = { version = "0.3", features = ["Window", "Storage", "console"] }
 

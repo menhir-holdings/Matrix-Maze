@@ -1,7 +1,7 @@
 # Matrix Maze — Status
 
 **Version:** 1.4.0 (8 levels)  
-**As of:** 2026-09-10  
+**As of:** 2026-09-18  
 **SoT:** [Linear — Matrix Maze](https://linear.app/menhir-holdings/project/matrix-maze-194b0b7b0bd7)  
 **Checkout:** `Menhir Holdings/Game/Matrix-Maze`  
 **Bookmark:** [https://matmaz.vercel.app](https://matmaz.vercel.app)
@@ -16,10 +16,25 @@
 - Gold-path QA automation ([MT-65](https://linear.app/menhir-holdings/issue/MT-65))
 - Vercel deploy; GitHub releases proxy for desktop downloads
 - `/play` + `/dev` retired ([MT-102](https://linear.app/menhir-holdings/issue/MT-102))
+- Web shell restyle (cabinet/title overlay) ([MT-208](https://linear.app/menhir-holdings/issue/MT-208))
+- Compact LEVEL START plate, Skip to finish, local handle + hiscores ([MT-223](https://linear.app/menhir-holdings/issue/MT-223) / [MT-230](https://linear.app/menhir-holdings/issue/MT-230))
+- Tab / desktop mark is Bench take **D** (T-junction), not the runner or 32px wordmark
 
 ## In review
 
-- [MT-208](https://linear.app/menhir-holdings/issue/MT-208) — Web shell restyle (cabinet/title overlay). WASM game, levels, and `game/` untouched. Kappa host → `matmaz.vercel.app`.
+- Account / monument identity — parked (`docs/identity-parked.md` local only; not this ship)
+
+## Shell vs WASM
+
+| Lives in web chrome (`/`) | Lives in the game view (`/game/` WASM) |
+|---|---|
+| Title, Play/Resume, **Skip to finish**, handle, pause, controls, download | Maze sim, raycast, movement, level timer |
+| Finish handle confirm + hiscores + player profile | L1–7 complete ASCII, `SPACE` next, `R` replay |
+| Esc overlay | Pointer-lock look, touch pad, in-run HUD |
+
+One hop after level 8: game posts `run-complete`, shell shows the plate. No extra lobby.
+
+**Cut:** ghost replay of a recorded path. `R` regenerates the maze and keeps the run.
 
 ## Backlog
 

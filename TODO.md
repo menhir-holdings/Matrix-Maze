@@ -4,7 +4,7 @@ Linear is authoritative: [Matrix Maze project](https://linear.app/menhir-holding
 
 ## In review
 
-- [MT-208](https://linear.app/menhir-holdings/issue/MT-208) — Web shell restyle (game untouched)
+- Account / monument identity — parked until a later lock (no-reset, beat-old-score). Not MT-223.
 
 ## 1. Center level-complete ASCII art — [MT-100](https://linear.app/menhir-holdings/issue/MT-100) (Backlog)
 
@@ -29,6 +29,11 @@ First-gesture unlock done. Mute UI + persisted preference still open.
 ## 4. Perf budget — [MT-69](https://linear.app/menhir-holdings/issue/MT-69) (Backlog)
 
 Define ASCII raycast FPS floor and document WASM bundle size.
+
+## Later (cut from MT-223)
+
+- Ghost replay of a recorded input path (`R` today only regenerates the maze)
+- Durable KV/Blob token on the Vercel project if `GET /api/scores` reports `store: "memory"`
 
 ## Canceled
 

@@ -24,6 +24,7 @@ body {
 #app {
     width: 100%;
     height: 100%;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -99,10 +100,20 @@ body {
 }
 
 #controls {
-    margin-top: 20px;
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 4;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 5px 10px;
     text-align: center;
-    color: #0f0;
+    color: #e8ffe8;
     font-size: 14px;
+    background: #000;
+    pointer-events: none;
     text-shadow: 0 0 10px hsla(var(--level-1-h), var(--level-1-s), var(--level-1-l), 0.5);
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
@@ -152,11 +163,21 @@ body {
 }
 
 #level-indicator {
-    margin-bottom: 10px;
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    transform: translateX(-50%);
+    z-index: 4;
+    width: max-content;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 4px 10px;
     text-align: center;
-    color: #0f0;
+    color: #f4fff4;
     font-size: 16px;
     font-weight: bold;
+    background: #000;
+    pointer-events: none;
     text-shadow: 0 0 10px hsla(var(--level-1-h), var(--level-1-s), var(--level-1-l), 0.5);
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
@@ -275,5 +296,228 @@ body {
 .touch-btn.active {
     background: rgba(0, 255, 0, 0.35);
     transform: scale(0.94);
+}
+
+#arcade-plate,
+#finish-plate {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 80;
+    width: min(420px, calc(100vw - 28px));
+    max-height: min(78vh, 640px);
+    overflow: auto;
+    padding: 20px 18px 16px;
+    background: rgba(6, 6, 8, 0.94);
+    border: 1px solid rgba(247, 244, 236, 0.48);
+    border-radius: 16px;
+    color: #f7f4ec;
+    text-shadow: 0 1px 2px #000;
+}
+
+#arcade-plate[hidden],
+#finish-plate[hidden] {
+    display: none;
+}
+
+#arcade-plate .plate-kicker,
+#finish-plate .plate-kicker {
+    font-size: 0.85rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+#arcade-plate .plate-time,
+#finish-plate .plate-time {
+    margin: 8px 0 16px;
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+#arcade-plate label,
+#finish-plate label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+#arcade-plate input,
+#finish-plate input {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    font: inherit;
+    color: #f7f4ec;
+    caret-color: #f7f4ec;
+    color-scheme: dark;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(247, 244, 236, 0.4);
+    border-radius: 10px;
+}
+
+#arcade-plate button,
+#finish-plate #name-form button,
+#finish-plate #play-again {
+    width: 100%;
+    padding: 11px 16px;
+    font: inherit;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #111;
+    background: #f7f4ec;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.hiscore-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.hiscore-filters button {
+    appearance: none;
+    width: auto;
+    font: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(247, 244, 236, 0.78);
+    background: none;
+    border: 1px solid rgba(247, 244, 236, 0.4);
+    border-radius: 999px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+
+.hiscore-filters button.is-on {
+    color: #111;
+    background: #f7f4ec;
+    border-color: #f7f4ec;
+}
+
+.hiscore-name {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: #f7f4ec;
+    text-align: left;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+#profile-wrap[hidden] {
+    display: none;
+}
+
+.profile-back {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(247, 244, 236, 0.78);
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+#profile-name {
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.profile-stat {
+    margin: 6px 0;
+    font-size: 0.9rem;
+    color: rgba(247, 244, 236, 0.78);
+}
+
+.you-are {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #f7f4ec;
+}
+
+.you-are button {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0 0 0 8px;
+    font: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgba(247, 244, 236, 0.78);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.plate-note {
+    margin: 8px 0 0;
+    font-size: 0.82rem;
+    color: rgba(247, 244, 236, 0.78);
+}
+
+.plate-note[hidden] {
+    display: none;
+}
+
+#profile-levels {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+}
+
+#profile-levels li {
+    display: grid;
+    grid-template-columns: 4rem 1fr auto;
+    gap: 8px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(247, 244, 236, 0.28);
+}
+
+#finish-plate .plate-error {
+    min-height: 1.2em;
+    margin-top: 8px;
+    color: #ffd4a8;
+}
+
+#board-list {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+#board-list li {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    gap: 8px;
+    padding: 7px 4px;
+    border-bottom: 1px solid rgba(247, 244, 236, 0.28);
+}
+
+#board-list li.is-you {
+    background: rgba(247, 244, 236, 0.12);
+}
+
+.board-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 

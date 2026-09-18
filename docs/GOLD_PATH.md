@@ -31,9 +31,10 @@ Run once per browser after a hard refresh (empty cache). Production URL unless t
 | Reach exit — level-complete overlay | ☐ | ☐ | ☐ |
 | Space / Enter / tap advances to next level | ☐ | ☐ | ☐ |
 | Levels 2–8 complete without reload | ☐ | ☐ | ☐ |
-| After level 8 — run summary + play again | ☐ | ☐ | ☐ |
+| After level 8 — handle confirm + board + play again | ☐ | ☐ | ☐ |
+| **Skip to finish** (or `?finish=1`) opens the finish plate | ☐ | ☐ | ☐ |
 
-**Controls:** WASD move, Q/E turn, SPACE (or tap viewport on Windows) after win.
+**Controls:** WASD move, Q/E turn, SPACE continue (levels 1–7), **R** replay this level, name plate after level 8.
 
 ## Notes
 
